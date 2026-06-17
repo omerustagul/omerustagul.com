@@ -136,7 +136,8 @@ model Translation { id String @id @default(cuid()) lang String key String value 
 
 - [x] **F0 — Scaffold:** ✅ `web/` altında Next.js 16 (TS, App Router, Tailwind'siz) kuruldu; token sistemi `web/src/styles/`'e taşınıp `globals.css`'e bağlandı; Prisma 7 + `schema.prisma` (tüm modeller) + `@prisma/adapter-pg` singleton (`web/src/lib/prisma.ts`); `.env.example` + Postgres datasource (`prisma.config.ts`). `next build` yeşil. _Stil kararı: token CSS korundu (Tailwind kurulmadı)._
   > Not: Prisma 7 **driver adapter** kullanıyor (`new PrismaClient({ adapter })`), schema'da `url` yok — bağlantı `prisma.config.ts` (CLI) + adapter (runtime) üzerinden. CLI'da migration için `web/.env`'e gerçek `DATABASE_URL` yazın.
-- [ ] **F1 — Şema & DB:** yukarıdaki `schema.prisma`, ilk migration, `seed.ts` (demo kullanıcı/kurs/ürün).
+- [x] **F1 — Şema & DB:** ✅ `schema.prisma` (18 model) + ilk migration `20260617125136_init` Vercel/Prisma Postgres'e uygulandı; `seed.ts` çalıştı (9 kullanıcı, 1 kurs, 2 ürün, 24 oyun skoru). Komutlar: `npm run db:migrate | db:seed | db:reset | db:studio`.
+  > ⚠️ **Önemli kayıt:** Verilen DB (`db.prisma.io`) **boş değildi** — başka/önceki bir backend'in 20 tablosunu (portfolio/services/blog/appointments/contact/roles/permissions/audit/api_keys…) içeriyordu. Kullanıcının açık talimatıyla `public` şeması **tamamen silinip** sıfırdan kuruldu (veri kalıcı olarak kayboldu). `pg_dump` yoktu, yedek alınamadı.
 - [ ] **F2 — Auth:** Auth.js + hash + roller + `/admin` middleware koruması.
 - [ ] **F3 — Tasarım sistemi:** token'lar + component primitive'leri ([`components/`](components/)) TSX'e; `ThemeProvider` (mk-theme runtime → context).
 - [ ] **F4 — Site (okuma):** anasayfa + `pages/*` Server Component'ler olarak; veri Prisma'dan fetch.
