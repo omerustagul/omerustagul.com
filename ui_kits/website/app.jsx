@@ -33,13 +33,20 @@ function App() {
 
   const COMPS = { Hero: () => <Hero variant={variant} />, LatestWorks, WeeklyWork, Partners, Services, Academy, Collections, Games, Blog, Market, Stats, CTABlocks };
 
+  // Canonical homepage order (matches design_handoff README). Each id is unique
+  // so React keys don't collide; the admin "Sayfalar" layout overrides this.
   const sections = layout || [
-    { id: "hero", kind: "builtin", comp: "Hero" }, { id: "works", kind: "builtin", comp: "LatestWorks" },
-    { id: "partners", kind: "builtin", comp: "Partners" }, { id: "services", kind: "builtin", comp: "Services" },
-    { id: "works", kind: "builtin", comp: "LatestWorks" }, { id: "weekly", kind: "builtin", comp: "WeeklyWork" },
-    { id: "partners", kind: "builtin", comp: "Partners" }, { id: "services", kind: "builtin", comp: "Services" },
-    { id: "academy", kind: "builtin", comp: "Academy" }, { id: "collections", kind: "builtin", comp: "Collections" }, { id: "games", kind: "builtin", comp: "Games" }, { id: "blog", kind: "builtin", comp: "Blog" },
-    { id: "market", kind: "builtin", comp: "Market" }, { id: "stats", kind: "builtin", comp: "Stats" },
+    { id: "hero", kind: "builtin", comp: "Hero" },
+    { id: "works", kind: "builtin", comp: "LatestWorks" },
+    { id: "weekly", kind: "builtin", comp: "WeeklyWork" },
+    { id: "partners", kind: "builtin", comp: "Partners" },
+    { id: "services", kind: "builtin", comp: "Services" },
+    { id: "academy", kind: "builtin", comp: "Academy" },
+    { id: "collections", kind: "builtin", comp: "Collections" },
+    { id: "games", kind: "builtin", comp: "Games" },
+    { id: "blog", kind: "builtin", comp: "Blog" },
+    { id: "market", kind: "builtin", comp: "Market" },
+    { id: "stats", kind: "builtin", comp: "Stats" },
     { id: "cta", kind: "builtin", comp: "CTABlocks" },
   ];
 
