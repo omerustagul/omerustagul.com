@@ -1,0 +1,213 @@
+// Marka platform — starter schema (F1 will refine).
+// Derived from the prototype's theme/* localStorage data layers.
+// See ../../MIGRATION.md §3 for the field provenance.
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ---------------------------------------------------------------- identity
+enum Role {
+  ADMIN
+  EDITOR
+  MEMBER
+}
+
+model User {
+  id           String           @id @default(cuid())
+  name         String
+  email        String           @unique
+  passwordHash String? // hashed (bcrypt/argon2) — never plaintext
+  role         Role             @default(MEMBER)
+  avatar       String?
+  bio          String?
+  createdAt    DateTime         @default(now())
+  purchases    Purchase[]
+  enrollments  Enrollment[]
+  progress     LessonProgress[]
+  gameScores   GameScore[]
+  votes        ProjectVote[]
+  reviews      Review[]
+}
+
+// ------------------------------------------------------------------ academy
+model Course {
+  id          String       @id @default(cuid())
+  title       String
+  slug        String       @unique
+  price       Int          @default(0)
+  createdAt   DateTime     @default(now())
+  modules     Module[]
+  enrollments Enrollment[]
+}
+
+model Module {
+  id       String   @id @default(cuid())
+  courseId String
+  course   Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  title    String
+  order    Int      @default(0)
+  lessons  Lesson[]
+}
+
+model Lesson {
+  id       String           @id @default(cuid())
+  moduleId String
+  module   Module           @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+  title    String
+  kind     String // video | doc | link | text
+  content  String?
+  order    Int              @default(0)
+  progress LessonProgress[]
+}
+
+model Enrollment {
+  id        String   @id @default(cuid())
+  userId    String
+  courseId  String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  course    Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@unique([userId, courseId])
+}
+
+model LessonProgress {
+  id          String   @id @default(cuid())
+  userId      String
+  lessonId    String
+  courseId    String
+  completedAt DateTime @default(now())
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  lesson      Lesson   @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, lessonId])
+}
+
+// ------------------------------------------------------------------- market
+model Product {
+  id        String     @id @default(cuid())
+  title     String
+  slug      String     @unique
+  price     Int        @default(0)
+  createdAt DateTime   @default(now())
+  reviews   Review[]
+}
+
+model Review {
+  id        String   @id @default(cuid())
+  productId String
+  userId    String
+  rating    Int // 1..5
+  body      String
+  createdAt DateTime @default(now())
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+// generic purchase ledger (kind = "course" | "product")
+model Purchase {
+  id        String   @id @default(cuid())
+  userId    String
+  kind      String
+  refId     String
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, kind])
+}
+
+// --------------------------------------------------------- games & community
+// memory/sequence: higher is better. reaction: lower is better (ms).
+model GameScore {
+  id       String   @id @default(cuid())
+  userId   String
+  game     String
+  best     Int
+  playedAt DateTime @default(now())
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([game, best])
+}
+
+model ProjectVote {
+  id        String   @id @default(cuid())
+  projectId String
+  userId    String
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([projectId, userId])
+}
+
+model CommunityConfig {
+  id   Int  @id @default(1)
+  data Json
+}
+
+model Collection {
+  id    String @id @default(cuid())
+  title String
+  data  Json
+}
+
+// ----------------------------------------------------------------- pipeline
+model Lead {
+  id        String   @id @default(cuid())
+  name      String
+  email     String
+  message   String?
+  status    String   @default("new")
+  createdAt DateTime @default(now())
+}
+
+model Booking {
+  id        String   @id @default(cuid())
+  name      String
+  email     String
+  slot      DateTime
+  status    String   @default("pending")
+  createdAt DateTime @default(now())
+}
+
+// ------------------------------------------------------- content & settings
+model Page {
+  id       String    @id @default(cuid())
+  slug     String    @unique
+  title    String?
+  sections Section[]
+}
+
+model Section {
+  id     String  @id @default(cuid())
+  pageId String
+  page   Page    @relation(fields: [pageId], references: [id], onDelete: Cascade)
+  kind   String // builtin | custom
+  comp   String?
+  order  Int     @default(0)
+  data   Json?
+}
+
+model Profile {
+  id   String @id @default(cuid())
+  data Json
+}
+
+model SiteSettings {
+  id   Int  @id @default(1)
+  data Json // the mk-theme blob (header/footer tpl, accent, font, radius, mode, popup)
+}
+
+model Translation {
+  id    String @id @default(cuid())
+  lang  String // tr | en | de | ar
+  key   String
+  value String
+
+  @@unique([lang, key])
+}

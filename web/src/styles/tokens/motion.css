@@ -1,0 +1,36 @@
+/* ========================================================================
+   MOTION — premium, fast, restrained (300–600ms). Expo-out easing for the
+   "settle" feel; respects prefers-reduced-motion at the app level.
+   ======================================================================== */
+:root {
+  /* Durations */
+  --dur-instant: 120ms; /* @kind other */
+  --dur-fast: 220ms; /* @kind other */
+  --dur: 380ms; /* @kind other */
+  --dur-slow: 560ms; /* @kind other */
+
+  /* Easing */
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1); /* @kind other */
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1); /* @kind other */
+  --ease-emphasis: cubic-bezier(0.22, 1, 0.36, 1); /* @kind other */
+  --ease-linear: linear; /* @kind other */
+
+  /* Reveal defaults (read by scroll-reveal JS / components) */
+  --reveal-y: 24px; /* @kind other */
+  --reveal-dur: var(--dur-slow); /* @kind other */
+  --reveal-stagger: 80ms; /* @kind other */
+
+  /* Image hover scale */
+  --img-zoom: 1.05; /* @kind other */
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --dur-instant: 0ms; /* @kind other */
+    --dur-fast: 0ms; /* @kind other */
+    --dur: 0ms; /* @kind other */
+    --dur-slow: 0ms; /* @kind other */
+    --reveal-y: 0px; /* @kind other */
+    --img-zoom: 1; /* @kind other */
+  }
+}
