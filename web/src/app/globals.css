@@ -1,0 +1,4 @@
+/* Marka design system — token manifest (fonts, colors, type, spacing, motion,
+   base resets). Lives in src/styles/, copied from the prototype root. This
+   @import must stay first. */
+@import "../styles/marka.css";

@@ -1,0 +1,54 @@
+/* ========================================================================
+   SPACING, LAYOUT, RADII, SHADOWS — 4px base. Editorial: wide gutters,
+   generous section rhythm, hairline borders, restrained shadows.
+   ======================================================================== */
+:root {
+  /* 4px spacing scale */
+  --space-0: 0;
+  --space-1: 0.25rem;   /* 4 */
+  --space-2: 0.5rem;    /* 8 */
+  --space-3: 0.75rem;   /* 12 */
+  --space-4: 1rem;      /* 16 */
+  --space-5: 1.5rem;    /* 24 */
+  --space-6: 2rem;      /* 32 */
+  --space-7: 2.5rem;    /* 40 */
+  --space-8: 3rem;      /* 48 */
+  --space-9: 4rem;      /* 64 */
+  --space-10: 5rem;     /* 80 */
+  --space-12: 6rem;     /* 96 */
+  --space-16: 8rem;     /* 128 */
+  --space-20: 10rem;    /* 160 */
+
+  /* Layout — 12-col editorial grid, wide margins */
+  --container-max: 1440px;
+  --container-text: 760px; /* @kind spacing */
+  --gutter: clamp(1.25rem, 5vw, 5rem); /* @kind spacing */
+  --col-gap: 1.5rem; /* @kind spacing */
+  --grid-cols: 12; /* @kind other */
+  --section-y: clamp(4rem, 9vw, 9rem);   /* @kind spacing */
+
+  /* Radii — slightly rounded, consistent 8–12px */
+  --radius-xs: 6px;
+  --radius-sm: 8px;
+  --radius: 10px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+  --radius-pill: 999px;
+
+  /* Borders */
+  --border-w: 1px; /* @kind spacing */
+  --hairline: 1px solid var(--border); /* @kind other */
+
+  /* Shadows — minimal; lift on hover only */
+  --shadow-none: none;
+  --shadow-card: 0 1px 2px rgba(10, 10, 10, 0.04);
+  --shadow-lift: 0 18px 40px -16px rgba(10, 10, 10, 0.22);
+  --shadow-pop:  0 28px 64px -20px rgba(10, 10, 10, 0.30);
+
+  /* z-index scale */
+  --z-base: 1; /* @kind other */
+  --z-sticky: 100; /* @kind other */
+  --z-header: 200; /* @kind other */
+  --z-overlay: 300; /* @kind other */
+  --z-cursor: 9999; /* @kind other */
+}

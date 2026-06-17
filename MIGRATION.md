@@ -134,7 +134,8 @@ model Translation { id String @id @default(cuid()) lang String key String value 
 
 ## 7. Faz Faz Yol Haritası
 
-- [ ] **F0 — Scaffold:** `create-next-app` (TS, App Router), Tailwind/token CSS, Prisma init, Postgres bağlantısı, env şablonu.
+- [x] **F0 — Scaffold:** ✅ `web/` altında Next.js 16 (TS, App Router, Tailwind'siz) kuruldu; token sistemi `web/src/styles/`'e taşınıp `globals.css`'e bağlandı; Prisma 7 + `schema.prisma` (tüm modeller) + `@prisma/adapter-pg` singleton (`web/src/lib/prisma.ts`); `.env.example` + Postgres datasource (`prisma.config.ts`). `next build` yeşil. _Stil kararı: token CSS korundu (Tailwind kurulmadı)._
+  > Not: Prisma 7 **driver adapter** kullanıyor (`new PrismaClient({ adapter })`), schema'da `url` yok — bağlantı `prisma.config.ts` (CLI) + adapter (runtime) üzerinden. CLI'da migration için `web/.env`'e gerçek `DATABASE_URL` yazın.
 - [ ] **F1 — Şema & DB:** yukarıdaki `schema.prisma`, ilk migration, `seed.ts` (demo kullanıcı/kurs/ürün).
 - [ ] **F2 — Auth:** Auth.js + hash + roller + `/admin` middleware koruması.
 - [ ] **F3 — Tasarım sistemi:** token'lar + component primitive'leri ([`components/`](components/)) TSX'e; `ThemeProvider` (mk-theme runtime → context).
