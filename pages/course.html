@@ -1,0 +1,134 @@
+<!-- @dsCard group="Website" viewport="1440x900" name="Kurs Oynatıcı — Course player" subtitle="Müfredat, ders oynatıcı, ilerleme takibi ve tamamlama sertifikası" -->
+<!DOCTYPE html>
+<html lang="tr" data-theme="light">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Kurs — Marka</title>
+<link rel="stylesheet" href="../styles.css" />
+<link rel="stylesheet" href="../ui_kits/website/site.css" />
+<link rel="stylesheet" href="pages.css" />
+<script>window.MK_BASE = "../";</script>
+<script src="../theme/theme.js"></script>
+<script src="../theme/pages.js"></script>
+<script src="../theme/members.js"></script>
+<script src="../theme/community-cfg.js"></script>
+<script src="../theme/bookings.js"></script>
+<script src="../theme/courses.js"></script>
+<script src="../theme/i18n.js"></script>
+<script src="../theme/inline-edit.js"></script>
+</head>
+<body data-page="course">
+<div class="mk-site">
+  <div id="mk-header"></div>
+  <main id="course-root" class="page wrap"></main>
+  <div id="mk-footer"></div>
+</div>
+
+<script type="module">
+  import { BRAND_NAME, BRAND_SLOGAN, BRAND_SOCIAL } from "../brand/brand.js";
+  window.MARKA = { BRAND_NAME, BRAND_SLOGAN, BRAND_SOCIAL };
+</script>
+
+<script>
+  const esc = (s) => String(s == null ? "" : s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  const params = new URLSearchParams(location.search);
+  let courseId = params.get("id") || "c1";
+  let activeLesson = null;
+
+  function lessonIcon(t) { return t === "video" ? "▷" : t === "doc" ? "▤" : t === "link" ? "↗" : "▦"; }
+
+  function render() {
+    const C = window.MarkaCourses, M = window.MarkaMembers;
+    const c = C.get(courseId) || C.list()[0];
+    const root = document.getElementById("course-root");
+    if (!c) { root.innerHTML = "<p>Kurs bulunamadı.</p>"; return; }
+    const lessons = C.allLessons(c);
+    const enrolled = M && M.owns("course", c.id);
+    const done = (M ? M.courseDone(c.id) : []);
+    const pct = lessons.length ? Math.round(done.length / lessons.length * 100) : 0;
+    const complete = pct === 100 && lessons.length > 0;
+    if (!activeLesson) activeLesson = (lessons.find(l => !done.includes(l.id)) || lessons[0] || {}).id;
+    const cur = lessons.find(l => l.id === activeLesson) || lessons[0];
+
+    root.innerHTML = `
+      <a class="course-back" href="academy.html" data-cursor>← Akademi</a>
+      <header class="course-head reveal">
+        <span class="eyebrow">${esc(c.category)} · ${esc(c.level)}</span>
+        <h1>${esc(c.title)}</h1>
+        <p class="course-tagline">${esc(c.tagline || "")}</p>
+        <div class="course-meta"><span>Eğitmen <b>${esc(c.instructor)}</b></span><span>★ ${c.rating}</span><span>${lessons.length} ders</span></div>
+      </header>
+      <div class="course-prog reveal"><div class="course-prog__bar"><span style="width:${pct}%"></span></div><span class="course-prog__t">${done.length}/${lessons.length} ders · %${pct}</span></div>
+      ${complete ? `<div class="certificate reveal"><span class="certificate__seal">✦</span><div><span class="eyebrow">Tamamlandı</span><h3>Tebrikler, kursu bitirdin!</h3><p>Bu sertifika <b>${esc((M.current()||{}).name||"Öğrenci")}</b> adına, <b>${esc(c.title)}</b> kursunu tamamladığı için verilmiştir.</p></div><button class="btn btn--ghost" onclick="window.print()">Sertifikayı indir</button></div>` : ""}
+
+      <div class="course-layout">
+        <div class="course-player reveal">
+          ${!enrolled && !(cur && cur.free) ? `
+            <div class="course-locked">
+              <div class="course-locked__ic">🔒</div>
+              <h3>Bu derse erişmek için kayıt ol</h3>
+              <p>İlk ders ücretsiz önizlemededir. Tüm içeriğe erişmek için kursa kayıt ol.</p>
+              <div class="course-price">${c.salePrice ? `<span class="now">${esc(c.salePrice)}</span><span class="was">${esc(c.price)}</span>` : `<span class="now">${esc(c.price)}</span>`}</div>
+              <button class="btn btn--primary btn--lg" data-enroll>${M && M.isAuthed() ? "Kursa kayıt ol" : "Giriş yap & kayıt ol"} <span class="arr">→</span></button>
+            </div>` : `
+            <div class="course-stage">
+              ${cur && cur.type === "video" ? `<div class="course-video"><span class="course-video__play">▶</span><span class="course-video__t">${esc(cur.title)}</span></div>`
+                : cur && cur.type === "link" ? `<div class="course-doc"><a class="btn btn--primary" href="${esc(cur.url||"#")}" target="_blank" rel="noopener">${esc(cur.linkLabel||"Bağlantıyı aç")} ↗</a></div>`
+                : `<div class="course-doc"><span class="course-doc__ic">${lessonIcon(cur && cur.type)}</span></div>`}
+            </div>
+            <div class="course-lessoninfo">
+              <h2>${esc(cur ? cur.title : "")}</h2>
+              ${cur && cur.body ? `<p>${esc(cur.body)}</p>` : ""}
+              <button class="btn ${done.includes(cur && cur.id) ? "btn--ghost" : "btn--primary"}" data-complete="${cur ? cur.id : ""}">${done.includes(cur && cur.id) ? "✓ Tamamlandı — geri al" : "Dersi tamamla & devam et"}</button>
+            </div>`}
+        </div>
+
+        <aside class="course-curriculum reveal">
+          <h3 class="course-curriculum__h">Müfredat</h3>
+          ${(c.modules || []).map((mod, mi) => `
+            <div class="course-mod">
+              <div class="course-mod__h">${String(mi + 1).padStart(2, "0")} · ${esc(mod.title)}</div>
+              ${(mod.lessons || []).map(l => {
+                const isDone = done.includes(l.id); const locked = !enrolled && !l.free;
+                return `<button class="course-lesson ${l.id === activeLesson ? "is-active" : ""} ${isDone ? "is-done" : ""}" data-lesson="${l.id}" ${locked ? "data-locked=1" : ""}>
+                  <span class="course-lesson__ic">${isDone ? "✓" : locked ? "🔒" : lessonIcon(l.type)}</span>
+                  <span class="course-lesson__t">${esc(l.title)}</span>
+                  <span class="course-lesson__d">${l.free && !enrolled ? "Ücretsiz" : esc(l.dur || "")}</span>
+                </button>`;
+              }).join("")}
+            </div>`).join("")}
+        </aside>
+      </div>`;
+    if (window.MarkaMotion) window.MarkaMotion.init();
+  }
+
+  document.addEventListener("click", (e) => {
+    const M = window.MarkaMembers, c = window.MarkaCourses.get(courseId);
+    const ls = e.target.closest("[data-lesson]");
+    if (ls) { if (ls.getAttribute("data-locked")) { document.querySelector("[data-enroll]") ? document.querySelector("[data-enroll]").click() : null; return; } activeLesson = ls.getAttribute("data-lesson"); render(); return; }
+    const en = e.target.closest("[data-enroll]");
+    if (en) {
+      if (!M || !M.isAuthed()) { const b = document.querySelector('[data-action="open-auth"]'); if (b) b.click(); return; }
+      M.buyCourse(c.id); render(); return;
+    }
+    const cp = e.target.closest("[data-complete]");
+    if (cp) {
+      const lid = cp.getAttribute("data-complete"); const doneNow = M.courseDone(c.id).includes(lid);
+      if (doneNow) M.uncompleteLesson(c.id, lid);
+      else {
+        M.completeLesson(c.id, lid);
+        const all = window.MarkaCourses.allLessons(c); const idx = all.findIndex(l => l.id === lid);
+        if (idx >= 0 && idx < all.length - 1) activeLesson = all[idx + 1].id;
+      }
+      render(); return;
+    }
+  });
+
+  render();
+  if (window.MarkaMembers) window.MarkaMembers.subscribe(render);
+</script>
+<script src="../ui_kits/website/motion.js"></script>
+<script src="../theme/site-chrome.js"></script>
+</body>
+</html>

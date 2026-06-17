@@ -1,0 +1,72 @@
+<!-- @dsCard group="Website" viewport="1440x900" name="Blog Yazısı — Article" subtitle="Temiz okuma tipografisi, ilerleme çubuğu, ilgili yazılar" -->
+<!DOCTYPE html>
+<html lang="tr" data-theme="light">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Yazı — Marka</title>
+<link rel="stylesheet" href="../styles.css" />
+<link rel="stylesheet" href="../ui_kits/website/site.css" />
+<link rel="stylesheet" href="pages.css" />
+<script>window.MK_BASE = "../";</script>
+<script src="../theme/theme.js"></script>
+<script src="../theme/pages.js"></script>
+<script src="../theme/members.js"></script>
+<script src="../theme/bookings.js"></script>
+<script src="../theme/i18n.js"></script>
+<script src="../theme/inline-edit.js"></script>
+</head>
+<body data-page="blog-post">
+<div class="reading-progress" id="rp"></div>
+<div class="mk-site">
+  <div id="mk-header"></div>
+  <main class="page wrap article-wrap">
+    <a class="course-back" href="blog.html" data-cursor>← Tüm yazılar</a>
+    <article class="article">
+      <header class="article__head reveal">
+        <div class="card__meta mono"><span style="color:var(--accent-hover)">Görüş</span><span style="opacity:.4">·</span><span>12 Haziran 2026</span><span style="opacity:.4">·</span><span>6 dk okuma</span></div>
+        <h1>2026'da editoryal grid'ler neden geri döndü?</h1>
+        <p class="article__lead">Bol negatif alan, ince çizgiler ve büyük tipografi: ödüllü sitelerin ortak dilini inceliyoruz — ve bu dilin neden bir geçici trend değil, bir olgunlaşma olduğunu konuşuyoruz.</p>
+        <div class="article__author"><span class="article__ava">DA</span><div><b>Deniz Arı</b><span>Kurucu & Kreatif Direktör</span></div></div>
+      </header>
+      <div class="article__cover reveal"><div class="ph" style="aspect-ratio:21/9"><div class="ph__in"></div><span class="ph__tag">KAPAK GÖRSELİ</span></div></div>
+      <div class="prose article__body reveal">
+        <p>Son birkaç yılda web tasarımı, gösterişli ama gürültülü bir dönemden geçti. Şimdi ise tersine bir hareket var: sayfalar sadeleşiyor, tipografi büyüyor, her öğe nefes alacak alan buluyor.</p>
+        <h2>Negatif alanın gücü</h2>
+        <p>Editöryel grid'ler boşluğu bir tasarım malzemesi olarak kullanır. Boşluk, okuyucunun gözünü yönlendirir; hangi içeriğin önemli olduğunu sessizce söyler. Bu yüzden ödüllü siteler içeriği sıkıştırmaz — aralar.</p>
+        <h2>Tipografi yeniden merkeze</h2>
+        <p>Büyük puntolu başlıklar yalnızca estetik değil; bir hiyerarşi aracıdır. Net bir tipografik ölçek, bir sayfanın okunabilirliğini ve karakterini aynı anda belirler.</p>
+        <blockquote>İyi tasarım fark edilmez; yalnızca doğru hisseder. Editöryel grid bunu boşlukla başarır.</blockquote>
+        <h2>İnce çizgiler, güçlü yapı</h2>
+        <p>Hairline border'lar, kart gölgelerinin yerini alıyor. Bir piksellik çizgiler içeriği bölmeden ayırır; sayfaya bir gazete dinginliği katar. Bu, dijital olgunluğun işaretidir.</p>
+        <p>Sonuç olarak editöryel grid bir trend değil, web'in kendi diline dönüşüdür: içerik öncelikli, sakin ve güvenilir.</p>
+      </div>
+      <div class="article__tags reveal"><span class="chip">Tasarım</span><span class="chip">Tipografi</span><span class="chip">Grid</span></div>
+    </article>
+
+    <section class="article__related reveal">
+      <h3>İlgili yazılar</h3>
+      <div class="grid-3" id="related"></div>
+    </section>
+  </main>
+  <div id="mk-footer"></div>
+</div>
+
+<script type="module">
+  import { BRAND_NAME, BRAND_SLOGAN, BRAND_SOCIAL } from "../brand/brand.js";
+  window.MARKA = { BRAND_NAME, BRAND_SLOGAN, BRAND_SOCIAL };
+</script>
+<script>
+  // reading progress
+  (function () {
+    var rp = document.getElementById("rp");
+    function upd() { var h = document.documentElement; var max = h.scrollHeight - h.clientHeight; rp.style.width = (max > 0 ? (h.scrollTop / max * 100) : 0) + "%"; }
+    window.addEventListener("scroll", upd, { passive: true }); upd();
+  })();
+  var rel = [["Teknik","Smooth scroll ve performans dengesi"],["Süreç","Bir marka kimliğini nasıl kurguluyoruz"],["Görüş","Tipografi ile ritim yakalamak"]];
+  document.getElementById("related").innerHTML = rel.map(function (r, i) { return '<a class="card card--blog card--sm reveal" href="blog-post.html" data-cursor="Oku"><div class="ph"><div class="ph__in" style="filter:hue-rotate(' + (i*50) + 'deg)"></div><span class="ph__tag">YAZI</span></div><div class="card__meta mono"><span style="color:var(--accent-hover)">' + r[0] + '</span></div><h3 class="card__title">' + r[1] + '</h3></a>'; }).join("");
+</script>
+<script src="../ui_kits/website/motion.js"></script>
+<script src="../theme/site-chrome.js"></script>
+</body>
+</html>

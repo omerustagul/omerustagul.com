@@ -1,0 +1,48 @@
+<!-- @dsCard group="Website" viewport="1440x920" name="Anasayfa — Homepage" subtitle="Full homepage: hero (3 variants), works, partners, services, academy, blog, market, CTA + shared templated chrome" -->
+<!DOCTYPE html>
+<html lang="tr" data-theme="light">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Marka — Dijitalde yeni standart</title>
+<link rel="stylesheet" href="../../styles.css" />
+<link rel="stylesheet" href="site.css" />
+<script>window.MK_BASE = "../../";</script>
+<script src="../../theme/theme.js"></script>
+<script src="../../theme/pages.js"></script>
+<script src="../../theme/members.js"></script>
+<script src="../../theme/community-cfg.js"></script>
+<script src="../../theme/bookings.js"></script>
+<script src="../../theme/votes.js"></script>
+<script src="../../theme/i18n.js"></script>
+<script src="../../theme/inline-edit.js"></script>
+</head>
+<body data-page="home">
+<div class="mk-site">
+  <div id="mk-header"></div>
+  <div id="root"></div>
+  <div id="mk-footer"></div>
+</div>
+
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+<!-- single source of truth for the brand name -->
+<script type="module">
+  import { BRAND_NAME, BRAND_SLOGAN, BRAND_SOCIAL } from "../../brand/brand.js";
+  window.MARKA = { BRAND_NAME, BRAND_SLOGAN, BRAND_SOCIAL };
+</script>
+
+<script src="motion.js"></script>
+<script type="text/babel" src="parts.jsx"></script>
+<script type="text/babel" src="Hero.jsx"></script>
+<script type="text/babel" src="Sections.jsx"></script>
+<script type="text/babel" src="Games.jsx"></script>
+<script type="text/babel" src="Community.jsx"></script>
+<script type="text/babel" src="app.jsx"></script>
+
+<!-- shared header + footer (identical on every page; templated via admin) -->
+<script src="../../theme/site-chrome.js"></script>
+</body>
+</html>

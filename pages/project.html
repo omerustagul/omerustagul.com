@@ -1,0 +1,109 @@
+<!-- @dsCard group="Website" viewport="1440x820" name="Proje Detay — Project detail" subtitle="Hero, meta grid, prose, next-project transition" -->
+<!DOCTYPE html>
+<html lang="tr" data-theme="light">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Atlas Finans — Marka</title>
+<link rel="stylesheet" href="../styles.css" />
+<link rel="stylesheet" href="../ui_kits/website/site.css" />
+<link rel="stylesheet" href="pages.css" />
+<script>window.MK_BASE = "../";</script>
+<script src="../theme/theme.js"></script>
+<script src="../theme/pages.js"></script>
+<script src="../theme/members.js"></script>
+<script src="../theme/community-cfg.js"></script>
+<script src="../theme/bookings.js"></script>
+<script src="../theme/votes.js"></script>
+<script src="../theme/i18n.js"></script>
+<script src="../theme/inline-edit.js"></script>
+</head>
+<body data-page="project">
+<div class="mk-site">
+  <div class="progress" id="progress"></div>
+  <div id="mk-header"></div>
+  <main class="page">
+    <div class="wrap">
+      <header class="page__head reveal">
+        <span class="eyebrow">Proje — 2026</span>
+        <h1>Atlas Finans yeniden markalaşma</h1>
+      </header>
+      <div class="detail__hero reveal" data-parallax><div class="ph"><div class="ph__in"></div><span class="ph__tag">KAPAK GÖRSELİ</span></div></div>
+      <dl class="detail__meta reveal">
+        <div><dt>Müşteri</dt><dd>Atlas Bank</dd></div>
+        <div><dt>Yıl</dt><dd>2026</dd></div>
+        <div><dt>Hizmetler</dt><dd>Markalaşma · Web Sitesi Geliştirme · UI/UX Tasarım</dd></div>
+        <div><dt>Süre</dt><dd>14 hafta</dd></div>
+        <div><dt>Rol</dt><dd>Strateji & Tasarım</dd></div>
+      </dl>
+    </div>
+
+    <div class="wrap detail__cols">
+      <section class="caseblock reveal">
+        <span class="eyebrow">Problem</span>
+        <p>Atlas Bank, dijital bankacılığa geçişte güven veren ama hantal bir arayüzle anılıyordu. Yeni nesil kullanıcılar için marka fazla kurumsal, akışlar fazla karmaşıktı; mobil dönüşüm sektör ortalamasının altındaydı.</p>
+      </section>
+      <section class="caseblock reveal">
+        <span class="eyebrow">Çözüm & Yaklaşım</span>
+        <p>Markayı sıfırdan kurguladık: sade bir kelime-logo, net bir tipografik hiyerarşi ve tek bir güçlü vurgu rengi. Açılış akışını 11 adımdan 4 adıma indirdik, kritik işlemleri tek ekranda topladık.</p>
+        <p>Editoryal bir grid ve bol negatif alanla güveni görünür kıldık. Her ekran tek bir işe odaklandı.</p>
+      </section>
+    </div>
+
+    <div class="wrap">
+      <div class="impact reveal">
+        <span class="eyebrow">Etki & Sonuçlar</span>
+        <div class="impact__grid">
+          <div class="impact__row">
+            <span class="impact__lbl">Mobil dönüşüm</span>
+            <span class="impact__val"><span class="b">%1,9</span><span class="ar">→</span><span class="a">%4,3</span></span>
+          </div>
+          <div class="impact__row">
+            <span class="impact__lbl">Onboarding süresi</span>
+            <span class="impact__val"><span class="b">6,2 dk</span><span class="ar">→</span><span class="a">2,1 dk</span></span>
+          </div>
+          <div class="impact__row">
+            <span class="impact__lbl">App Store puanı</span>
+            <span class="impact__val"><span class="b">3,4</span><span class="ar">→</span><span class="a">4,8</span></span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="wrap">
+      <div class="detail__hero reveal"><div class="ph" style="aspect-ratio:16/9"><div class="ph__in"></div><span class="ph__tag">TAM GENİŞLİK GÖRSEL</span></div></div>
+    </div>
+
+    <div class="wrap">
+      <blockquote class="casequote reveal">
+        <p>“Marka, dijital kimliğimizi tamamen yeniden tanımladı. Sonuçlar ilk aydan itibaren konuştu.”</p>
+        <footer><span class="ph ph--av"><span class="ph__in"></span></span> Selin Demir · Atlas Bank · Dijital Direktörü</footer>
+      </blockquote>
+    </div>
+
+    <div class="wrap nextproj reveal">
+      <span class="eyebrow">Sonraki Proje</span>
+      <a href="project.html" data-cursor="Sonraki →" style="margin-top:var(--space-5)">
+        <h3>Nova Spor Uygulaması</h3>
+        <span class="iconbtn" style="width:64px;height:64px">→</span>
+      </a>
+    </div>
+  </main>
+  <div id="mk-footer"></div>
+</div>
+
+<script type="module">
+  import { BRAND_NAME, BRAND_SLOGAN, BRAND_SOCIAL } from "../brand/brand.js";
+  window.MARKA = { BRAND_NAME, BRAND_SLOGAN, BRAND_SOCIAL };
+</script>
+<script>
+  addEventListener("scroll", () => {
+    const h = document.documentElement;
+    const p = h.scrollTop / (h.scrollHeight - h.clientHeight);
+    document.getElementById("progress").style.width = (p * 100) + "%";
+  }, { passive: true });
+</script>
+<script src="../ui_kits/website/motion.js"></script>
+<script src="../theme/site-chrome.js"></script>
+</body>
+</html>

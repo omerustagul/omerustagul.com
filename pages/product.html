@@ -1,0 +1,106 @@
+<!-- @dsCard group="Website" viewport="1440x900" name="Ürün Detay — Product page" subtitle="Galeri, satın alma akışı, özellikler ve yorumlar" -->
+<!DOCTYPE html>
+<html lang="tr" data-theme="light">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Ürün — Marka</title>
+<link rel="stylesheet" href="../styles.css" />
+<link rel="stylesheet" href="../ui_kits/website/site.css" />
+<link rel="stylesheet" href="pages.css" />
+<script>window.MK_BASE = "../";</script>
+<script src="../theme/theme.js"></script>
+<script src="../theme/pages.js"></script>
+<script src="../theme/members.js"></script>
+<script src="../theme/community-cfg.js"></script>
+<script src="../theme/bookings.js"></script>
+<script src="../theme/products.js"></script>
+<script src="../theme/i18n.js"></script>
+<script src="../theme/inline-edit.js"></script>
+</head>
+<body data-page="product">
+<div class="mk-site">
+  <div id="mk-header"></div>
+  <main id="product-root" class="page wrap"></main>
+  <div id="mk-footer"></div>
+</div>
+
+<script type="module">
+  import { BRAND_NAME, BRAND_SLOGAN, BRAND_SOCIAL } from "../brand/brand.js";
+  window.MARKA = { BRAND_NAME, BRAND_SLOGAN, BRAND_SOCIAL };
+</script>
+
+<script>
+  const esc = (s) => String(s == null ? "" : s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  const params = new URLSearchParams(location.search);
+  const pid = params.get("id") || "p1";
+  let gIdx = 0, formRating = 5;
+
+  function stars(n) { return "★★★★★".slice(0, Math.round(n)) + "☆☆☆☆☆".slice(0, 5 - Math.round(n)); }
+
+  function render() {
+    const P = window.MarkaProducts, M = window.MarkaMembers;
+    const p = P.get(pid) || P.list()[0];
+    const root = document.getElementById("product-root");
+    if (!p) { root.innerHTML = "<p>Ürün bulunamadı.</p>"; return; }
+    const owned = M && M.owns("product", p.id);
+    const revs = P.reviews(p.id); const rating = P.rating(p.id);
+    root.innerHTML = `
+      <a class="course-back" href="market.html" data-cursor>← Market</a>
+      <div class="prod">
+        <div class="prod__media reveal">
+          <div class="prod__main"><div class="ph" style="aspect-ratio:4/3"><div class="ph__in" style="filter:hue-rotate(${(p.hue||0)+gIdx*30}deg)"></div><span class="ph__tag">ÖNİZLEME ${gIdx + 1}</span></div></div>
+          <div class="prod__thumbs">${Array.from({ length: p.gallery || 1 }, (_, i) => `<button class="prod__thumb ${i === gIdx ? "on" : ""}" data-g="${i}"><div class="ph"><div class="ph__in" style="filter:hue-rotate(${(p.hue||0)+i*30}deg)"></div></div></button>`).join("")}</div>
+        </div>
+        <div class="prod__info reveal">
+          <span class="eyebrow">${esc(p.type)} · ${esc(p.format)}</span>
+          <h1>${esc(p.title)}</h1>
+          <p class="prod__tagline">${esc(p.tagline || "")}</p>
+          <div class="prod__rating">${rating ? `<span class="stars">${stars(rating)}</span> <b>${rating}</b> <span class="card__meta">(${revs.length} yorum)</span>` : `<span class="card__meta">Henüz yorum yok</span>`}</div>
+          <div class="prod__buybox">
+            <div class="prod__price">${P.priceStr(p)}</div>
+            ${owned
+              ? `<button class="btn btn--primary btn--lg" data-download><span class="arr">↓</span> İndir</button><span class="prod__owned">✓ Bu ürüne sahipsin</span>`
+              : `<button class="btn btn--primary btn--lg" data-buy>${M && M.isAuthed() ? "Satın Al" : "Giriş yap & Satın Al"} <span class="arr">→</span></button>`}
+            <span class="prod__seller">Satıcı: <b>${esc(p.seller)}</b> · ${esc(p.license)} lisans</span>
+          </div>
+          ${p.desc ? `<p class="prod__desc">${esc(p.desc)}</p>` : ""}
+          ${(p.includes || []).length ? `<div class="prod__block"><span class="eyebrow">Pakette</span><ul class="pv-checklist">${p.includes.map(i => `<li><span class="ck">✓</span>${esc(i)}</li>`).join("")}</ul></div>` : ""}
+          ${(p.specs || []).length ? `<dl class="prod__specs">${p.specs.map(([k, v]) => `<div><dt>${esc(k)}</dt><dd>${esc(v)}</dd></div>`).join("")}</dl>` : ""}
+        </div>
+      </div>
+
+      <section class="prod__reviews reveal">
+        <h2>Yorumlar ${rating ? `· ${stars(rating)} ${rating}` : ""}</h2>
+        ${M && M.isAuthed() ? `
+          <div class="review-form">
+            <div class="review-form__stars" data-rate>${[1,2,3,4,5].map(n => `<button class="rstar ${n <= formRating ? "on" : ""}" data-star="${n}">★</button>`).join("")}</div>
+            <textarea class="adm-input" data-review-text placeholder="Bu ürün hakkında ne düşünüyorsun?" style="width:100%;min-height:4rem;font-family:inherit;padding:.7rem;border:1px solid var(--border);border-radius:var(--radius);background:var(--surface)"></textarea>
+            <button class="btn btn--secondary" data-submit-review>Yorum gönder</button>
+          </div>` : `<p class="card__meta">Yorum yapmak için <button class="prod__loginlink" data-action="open-auth">giriş yap</button>.</p>`}
+        <div class="review-list">
+          ${revs.length ? revs.map(r => `<div class="review"><div class="review__top"><span class="review__ava">${esc((r.user||"?")[0])}</span><span class="review__name">${esc(r.user)}</span><span class="review__stars">${stars(r.rating)}</span><span class="review__date mono">${esc(r.date)}</span></div><p class="review__text">${esc(r.text)}</p></div>`).join("") : `<p class="card__meta">İlk yorumu sen yaz.</p>`}
+        </div>
+      </section>`;
+    if (window.MarkaMotion) window.MarkaMotion.init();
+  }
+
+  document.addEventListener("click", (e) => {
+    const P = window.MarkaProducts, M = window.MarkaMembers, p = P.get(pid) || P.list()[0];
+    const g = e.target.closest("[data-g]"); if (g) { gIdx = +g.getAttribute("data-g"); render(); return; }
+    const buy = e.target.closest("[data-buy]");
+    if (buy) { if (!M || !M.isAuthed()) { const b = document.querySelector('[data-action="open-auth"]'); if (b) b.click(); return; } M.buyProduct(p.id); render(); return; }
+    if (e.target.closest("[data-download]")) { alert("İndirme başladı (demo)."); return; }
+    const st = e.target.closest("[data-star]"); if (st) { formRating = +st.getAttribute("data-star"); document.querySelectorAll("[data-star]").forEach(s => s.classList.toggle("on", +s.getAttribute("data-star") <= formRating)); return; }
+    const sub = e.target.closest("[data-submit-review]");
+    if (sub) { const t = document.querySelector("[data-review-text]"); const txt = (t && t.value.trim()) || ""; if (!txt) { alert("Lütfen bir yorum yaz."); return; } P.addReview(p.id, formRating, txt); render(); return; }
+  });
+
+  render();
+  if (window.MarkaMembers) window.MarkaMembers.subscribe(render);
+  if (window.MarkaProducts) window.MarkaProducts.subscribe(render);
+</script>
+<script src="../ui_kits/website/motion.js"></script>
+<script src="../theme/site-chrome.js"></script>
+</body>
+</html>

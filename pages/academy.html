@@ -1,0 +1,81 @@
+<!-- @dsCard group="Website" viewport="1440x820" name="Akademi — Academy" subtitle="Course grid with level + topic filters" -->
+<!DOCTYPE html>
+<html lang="tr" data-theme="light">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Akademi — Marka</title>
+<link rel="stylesheet" href="../styles.css" />
+<link rel="stylesheet" href="../ui_kits/website/site.css" />
+<link rel="stylesheet" href="pages.css" />
+<script>window.MK_BASE = "../";</script>
+<script src="../theme/theme.js"></script>
+<script src="../theme/pages.js"></script>
+<script src="../theme/members.js"></script>
+<script src="../theme/community-cfg.js"></script>
+<script src="../theme/bookings.js"></script>
+<script src="../theme/votes.js"></script>
+<script src="../theme/courses.js"></script>
+<script src="../theme/i18n.js"></script>
+<script src="../theme/inline-edit.js"></script>
+</head>
+<body data-page="academy">
+<div class="mk-site">
+  <div id="mk-header"></div>
+  <main class="page wrap">
+    <header class="page__head reveal">
+      <span class="eyebrow">Akademi</span>
+      <h1>En iyilerden öğren</h1>
+      <p>Sektörün önde gelen tasarımcı ve geliştiricilerinden, projeye dönüşen kurslar.</p>
+    </header>
+
+    <div class="filterbar reveal">
+      <button class="chip" aria-pressed="true">Tüm Konular</button>
+      <button class="chip">Tasarım</button>
+      <button class="chip">Geliştirme</button>
+      <button class="chip">Motion</button>
+      <button class="chip">Strateji</button>
+      <span class="count">52 kurs</span>
+    </div>
+
+    <div class="grid-4" id="grid"></div>
+  </main>
+  <div id="mk-footer"></div>
+</div>
+
+<script type="module">
+  import { BRAND_NAME, BRAND_SLOGAN, BRAND_SOCIAL } from "../brand/brand.js";
+  window.MARKA = { BRAND_NAME, BRAND_SLOGAN, BRAND_SOCIAL };
+</script>
+<script>
+  const C = window.MarkaCourses;
+  const all = C.list();
+  const grid = document.getElementById("grid");
+  document.querySelector(".filterbar .count").textContent = all.length + " kurs";
+  function draw(cat) {
+    const rows = cat && cat !== "Tüm Konular" ? all.filter(c => c.category === cat) : all;
+    grid.innerHTML = rows.map((c, i) => `
+      <a class="card card--course card--sm reveal" href="course.html?id=${c.id}" data-cursor="Kursu Aç">
+        <div style="position:relative">
+          <div class="ph" style="aspect-ratio:16 / 10"><div class="ph__in" style="filter:hue-rotate(${(c.hue||0)+i*20}deg)"></div><span class="ph__tag">KURS</span></div>
+          <span class="badge badge--invert" style="position:absolute;top:12px;left:12px">${c.level}</span>
+        </div>
+        <h3 class="card__title">${c.title}</h3>
+        <span class="card__meta">${c.instructor}</span>
+        <div class="card__top" style="margin-top:.2rem">
+          <span class="rating"><span class="stars">★★★★★</span><b>${c.rating}</b><span style="color:var(--text-muted)">(${c.students})</span></span>
+          <span class="card__price">${c.price}</span>
+        </div>
+      </a>`).join("");
+    if (window.MarkaMotion) window.MarkaMotion.reveal();
+  }
+  draw();
+  document.querySelectorAll(".chip").forEach(ch => ch.addEventListener("click", () => {
+    document.querySelectorAll(".chip").forEach(c => c.setAttribute("aria-pressed", "false"));
+    ch.setAttribute("aria-pressed", "true"); draw(ch.textContent.trim());
+  }));
+</script>
+<script src="../ui_kits/website/motion.js"></script>
+<script src="../theme/site-chrome.js"></script>
+</body>
+</html>

@@ -1,0 +1,154 @@
+<!-- @dsCard group="Website" viewport="1440x900" name="Ben Kimim — Founder CV" subtitle="Kariyer profili: bio, deneyim zaman tüneli, girişimler, ödüller, öne çıkan işler" -->
+<!DOCTYPE html>
+<html lang="tr" data-theme="light">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Ben Kimim — Marka</title>
+<link rel="stylesheet" href="../styles.css" />
+<link rel="stylesheet" href="../ui_kits/website/site.css" />
+<link rel="stylesheet" href="pages.css" />
+<script>window.MK_BASE = "../";</script>
+<script src="../theme/theme.js"></script>
+<script src="../theme/pages.js"></script>
+<script src="../theme/profile.js"></script>
+<script src="../theme/members.js"></script>
+<script src="../theme/community-cfg.js"></script>
+<script src="../theme/bookings.js"></script>
+<script src="../theme/votes.js"></script>
+<script src="../theme/i18n.js"></script>
+<script src="../theme/inline-edit.js"></script>
+</head>
+<body data-page="cv">
+<div class="mk-site">
+  <div id="mk-header"></div>
+  <main id="cv-root"></main>
+  <div id="mk-footer"></div>
+</div>
+
+<script type="module">
+  import { BRAND_NAME, BRAND_SLOGAN, BRAND_SOCIAL } from "../brand/brand.js";
+  window.MARKA = { BRAND_NAME, BRAND_SLOGAN, BRAND_SOCIAL };
+</script>
+
+<script>
+  const esc = (s) => String(s == null ? "" : s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  const paras = (t) => esc(t).split(/\n{2,}/).map(p => `<p>${p.replace(/\n/g, "<br>")}</p>`).join("");
+
+  function avatar(p, big) {
+    if (p.avatar) return `<img src="${p.avatar}" alt="${esc(p.name)}" />`;
+    const initials = (p.name || "").split(/\s+/).slice(0, 2).map(w => w[0] || "").join("").toUpperCase();
+    return `<span class="cv-ava__initials">${esc(initials)}</span>`;
+  }
+
+  function render() {
+    const p = window.MarkaProfile.get();
+    const root = document.getElementById("cv-root");
+    root.innerHTML = `
+      <section class="cv-hero">
+        <div class="cv-hero__cover" data-parallax>${p.cover ? `<img src="${p.cover}" alt="">` : `<div class="cv-hero__grad"></div>`}</div>
+        <div class="wrap cv-hero__inner">
+          <div class="cv-ava reveal">${avatar(p, true)}</div>
+          <div class="cv-hero__body">
+            <span class="eyebrow reveal">Ben Kimim</span>
+            <h1 class="cv-name reveal">${esc(p.name)}</h1>
+            <p class="cv-role reveal">${esc(p.role)}</p>
+            <p class="cv-tagline reveal">${esc(p.tagline)}</p>
+            <div class="cv-meta reveal">
+              ${p.location ? `<span class="cv-chip">${esc(p.location)}</span>` : ""}
+              ${p.available ? `<span class="cv-chip cv-chip--avail"><i></i> Yeni projelere açık</span>` : ""}
+            </div>
+            <div class="cv-hero__cta reveal">
+              <a class="btn btn--primary" href="contact.html" data-magnetic data-cursor="İletişim">İletişime geç <span class="arr">→</span></a>
+              ${p.contactEmail ? `<a class="btn btn--ghost" href="mailto:${esc(p.contactEmail)}">${esc(p.contactEmail)}</a>` : ""}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section wrap cv-grid">
+        <div class="cv-about reveal">
+          <span class="eyebrow">Hakkımda</span>
+          <div class="cv-bio">${paras(p.bio)}</div>
+          ${p.skills && p.skills.length ? `<div class="cv-skills">${p.skills.map(s => `<span class="cv-skill">${esc(s)}</span>`).join("")}</div>` : ""}
+        </div>
+        <aside class="cv-stats reveal">
+          ${(p.stats || []).map(s => `<div class="cv-stat"><div class="cv-stat__num" data-count="${s.num}">${s.num}<span class="u">${esc(s.suffix || "")}</span></div><div class="cv-stat__label">${esc(s.label)}</div></div>`).join("")}
+        </aside>
+      </section>
+
+      ${(p.experience || []).length ? `
+      <section class="section wrap">
+        <header class="cv-head reveal"><span class="eyebrow">Kariyer</span><h2>Deneyim</h2></header>
+        <div class="cv-timeline">
+          ${p.experience.map(e => `
+            <div class="cv-tl reveal">
+              <div class="cv-tl__dot ${e.current ? "is-current" : ""}"></div>
+              <div class="cv-tl__period">${esc(e.period)}</div>
+              <div class="cv-tl__body">
+                <h3>${esc(e.role)} ${e.current ? `<span class="cv-badge">Güncel</span>` : ""}</h3>
+                <div class="cv-tl__co">${esc(e.company)}</div>
+                ${e.desc ? `<p>${esc(e.desc)}</p>` : ""}
+              </div>
+            </div>`).join("")}
+        </div>
+      </section>` : ""}
+
+      ${(p.ventures || []).length ? `
+      <section class="section wrap">
+        <header class="cv-head reveal"><span class="eyebrow">Girişimler</span><h2>Kurduğum işler</h2></header>
+        <div class="grid-3 cv-ventures">
+          ${p.ventures.map(v => `
+            <${v.url ? "a" : "div"} class="cv-venture reveal" ${v.url ? `href="${esc(v.url)}" target="_blank" rel="noopener" data-cursor="Aç →"` : ""}>
+              <div class="cv-venture__top"><h4>${esc(v.name)}</h4><span>${esc(v.period)}</span></div>
+              <div class="cv-venture__role">${esc(v.role)}</div>
+              ${v.desc ? `<p>${esc(v.desc)}</p>` : ""}
+            </${v.url ? "a" : "div"}>`).join("")}
+        </div>
+      </section>` : ""}
+
+      ${(p.awards || []).length ? `
+      <section class="section wrap">
+        <header class="cv-head reveal"><span class="eyebrow">Tanınırlık</span><h2>Ödüller & başarılar</h2></header>
+        <ul class="cv-awards">
+          ${p.awards.map(a => `<li class="cv-award reveal"><span class="cv-award__yr">${esc(a.year)}</span><span class="cv-award__title">${esc(a.title)}</span><span class="cv-award__org">${esc(a.org)}</span></li>`).join("")}
+        </ul>
+      </section>` : ""}
+
+      ${(p.featured || []).length ? `
+      <section class="section wrap">
+        <header class="cv-head reveal"><span class="eyebrow">Seçili işler</span><h2>Öne çıkan projeler</h2></header>
+        <div class="cv-featured">
+          ${p.featured.map(f => `
+            <a class="cv-feat reveal" href="${esc(f.href || "#")}" data-cursor="Gör →">
+              <div class="cv-feat__media ph"><div class="ph__in"></div></div>
+              <div class="cv-feat__meta"><h3>${esc(f.title)}</h3><span>${esc(f.year)}</span></div>
+            </a>`).join("")}
+        </div>
+      </section>` : ""}
+
+      ${(p.press || []).length ? `
+      <section class="section wrap">
+        <header class="cv-head reveal"><span class="eyebrow">Basında</span><h2>Yazılar & söyleşiler</h2></header>
+        <ul class="cv-press">
+          ${p.press.map(pr => `<li class="reveal"><${pr.url ? "a" : "span"} ${pr.url ? `href="${esc(pr.url)}" target="_blank" rel="noopener" data-cursor` : ""}><span class="cv-press__title">${esc(pr.title)}</span><span class="cv-press__meta">${esc(pr.outlet)} · ${esc(pr.year)}</span></${pr.url ? "a" : "span"}></li>`).join("")}
+        </ul>
+      </section>` : ""}
+
+      <section class="section wrap">
+        <div class="cv-cta reveal">
+          <h2>Birlikte çalışalım.</h2>
+          <a class="btn btn--primary btn--lg" href="contact.html" data-magnetic data-cursor="İletişim">Görüşme yap <span class="arr">→</span></a>
+        </div>
+      </section>`;
+    if (window.MarkaMotion) window.MarkaMotion.init();
+  }
+
+  render();
+  if (window.MarkaProfile) window.MarkaProfile.subscribe(render);
+</script>
+
+<script src="../ui_kits/website/motion.js"></script>
+<script src="../theme/site-chrome.js"></script>
+</body>
+</html>

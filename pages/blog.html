@@ -1,0 +1,79 @@
+<!-- @dsCard group="Website" viewport="1440x820" name="Blog" subtitle="Featured post + filter chips + article grid" -->
+<!DOCTYPE html>
+<html lang="tr" data-theme="light">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Blog — Marka</title>
+<link rel="stylesheet" href="../styles.css" />
+<link rel="stylesheet" href="../ui_kits/website/site.css" />
+<link rel="stylesheet" href="pages.css" />
+<script>window.MK_BASE = "../";</script>
+<script src="../theme/theme.js"></script>
+<script src="../theme/pages.js"></script>
+<script src="../theme/members.js"></script>
+<script src="../theme/community-cfg.js"></script>
+<script src="../theme/bookings.js"></script>
+<script src="../theme/votes.js"></script>
+<script src="../theme/i18n.js"></script>
+<script src="../theme/inline-edit.js"></script>
+</head>
+<body data-page="blog">
+<div class="mk-site">
+  <div id="mk-header"></div>
+  <main class="page wrap">
+    <header class="page__head reveal">
+      <span class="eyebrow">Güncel Yazılar</span>
+      <h1>Stüdyodan notlar</h1>
+      <p>Tasarım, süreç ve kültür üzerine düşünceler.</p>
+    </header>
+
+    <a class="card card--blog reveal" href="blog-post.html" data-cursor="Oku" style="margin-bottom:var(--space-8)">
+      <div class="ph" style="aspect-ratio:21/9"><div class="ph__in"></div><span class="ph__tag">ÖNE ÇIKAN</span></div>
+      <div class="card__meta mono"><span style="color:var(--accent-hover)">Görüş</span><span style="opacity:.4">·</span><span>12 Haz 2026</span><span style="opacity:.4">·</span><span>6 dk okuma</span></div>
+      <h3 class="card__title" style="font-size:var(--fs-h1)">2026'da editoryal grid'ler neden geri döndü?</h3>
+      <p class="card__excerpt" style="font-size:var(--fs-lead);max-width:60ch">Bol negatif alan, ince çizgiler ve büyük tipografi: ödüllü sitelerin ortak dilini inceliyoruz.</p>
+    </a>
+
+    <div class="filterbar reveal">
+      <button class="chip" aria-pressed="true">Tümü</button>
+      <button class="chip">Görüş</button>
+      <button class="chip">Süreç</button>
+      <button class="chip">Teknik</button>
+      <button class="chip">Kültür</button>
+      <span class="count">36 yazı</span>
+    </div>
+
+    <div class="grid-3" id="grid"></div>
+  </main>
+  <div id="mk-footer"></div>
+</div>
+
+<script type="module">
+  import { BRAND_NAME, BRAND_SLOGAN, BRAND_SOCIAL } from "../brand/brand.js";
+  window.MARKA = { BRAND_NAME, BRAND_SLOGAN, BRAND_SOCIAL };
+</script>
+<script>
+  const posts = [
+    ["Teknik", "28 May", "7 dk", "Smooth scroll ve performans dengesi"],
+    ["Süreç", "03 Haz", "4 dk", "Bir marka kimliğini nasıl kurguluyoruz"],
+    ["Kültür", "19 May", "3 dk", "Stüdyoda bir hafta"],
+    ["Görüş", "10 May", "5 dk", "Tipografi ile ritim yakalamak"],
+    ["Teknik", "02 May", "8 dk", "Tasarım sistemini ölçeklemek"],
+    ["Süreç", "24 Nis", "6 dk", "Müşteriyle ortak yaratım"],
+  ];
+  document.getElementById("grid").innerHTML = posts.map(([cat, d, rt, t], i) => `
+    <a class="card card--blog card--sm reveal" href="blog-post.html" data-cursor="Oku">
+      <div class="ph"><div class="ph__in" style="filter:hue-rotate(${i*40}deg)"></div><span class="ph__tag">YAZI</span></div>
+      <div class="card__meta mono"><span style="color:var(--accent-hover)">${cat}</span><span style="opacity:.4">·</span><span>${d}</span><span style="opacity:.4">·</span><span>${rt}</span></div>
+      <h3 class="card__title">${t}</h3>
+    </a>`).join("");
+  document.querySelectorAll(".chip").forEach(ch => ch.addEventListener("click", () => {
+    document.querySelectorAll(".chip").forEach(c => c.setAttribute("aria-pressed", "false"));
+    ch.setAttribute("aria-pressed", "true");
+  }));
+</script>
+<script src="../ui_kits/website/motion.js"></script>
+<script src="../theme/site-chrome.js"></script>
+</body>
+</html>

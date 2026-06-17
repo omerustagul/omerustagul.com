@@ -1,0 +1,91 @@
+<!-- @dsCard group="Website" viewport="1440x820" name="İletişim — Contact" subtitle="Big title, editorial form, office info" -->
+<!DOCTYPE html>
+<html lang="tr" data-theme="light">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>İletişim — Marka</title>
+<link rel="stylesheet" href="../styles.css" />
+<link rel="stylesheet" href="../ui_kits/website/site.css" />
+<link rel="stylesheet" href="pages.css" />
+<script>window.MK_BASE = "../";</script>
+<script src="../theme/theme.js"></script>
+<script src="../theme/pages.js"></script>
+<script src="../theme/members.js"></script>
+<script src="../theme/community-cfg.js"></script>
+<script src="../theme/bookings.js"></script>
+<script src="../theme/votes.js"></script>
+<script src="../theme/leads.js"></script>
+<script src="../theme/i18n.js"></script>
+<script src="../theme/inline-edit.js"></script>
+</head>
+<body data-page="contact">
+<div class="mk-site">
+  <div id="mk-header"></div>
+  <main class="page wrap">
+    <header class="page__head reveal">
+      <span class="eyebrow">İletişim</span>
+      <h1>Birlikte çalışalım</h1>
+      <p>Bir fikrin, bir markan ya da bir sorun mu var? Formu doldur, 48 saat içinde dönelim.</p>
+    </header>
+
+    <section class="section contact">
+      <form class="form reveal" id="lead-form" onsubmit="return false">
+        <div class="row">
+          <div class="field"><label for="ad">Ad Soyad</label><input id="ad" placeholder="Adınız" /></div>
+          <div class="field"><label for="ep">E-posta</label><input id="ep" type="email" placeholder="siz@ornek.com" /></div>
+        </div>
+        <div class="field"><label for="bt">Bütçe</label>
+          <select id="bt"><option>₺50.000 altı</option><option>₺50.000 – 150.000</option><option>₺150.000 – 400.000</option><option>₺400.000+</option></select>
+        </div>
+        <div class="field"><label for="ms">Mesaj</label><textarea id="ms" placeholder="Projenizden bahsedin…"></textarea></div>
+        <button type="button" id="lead-send" class="btn btn--primary btn--lg" data-magnetic style="align-self:flex-start;margin-top:var(--space-3)">Gönder <span class="arr">→</span></button>
+        <p id="lead-ok" class="lead-ok" hidden>✓ Talebin alındı — 48 saat içinde döneceğiz.</p>
+      </form>
+
+      <aside class="office reveal">
+        <div class="ph"><div class="ph__in"></div><span class="ph__tag">OFİS / HARİTA</span></div>
+        <dl>
+          <dt>Adres</dt><dd>Bomonti, İstanbul</dd>
+          <dt>E-posta</dt><dd>merhaba@marka.studio</dd>
+          <dt>Telefon</dt><dd>+90 212 000 00 00</dd>
+        </dl>
+        <div class="ftr__social" style="display:flex;gap:var(--space-3)">
+          <a class="soc" href="#" aria-label="Instagram" data-cursor title="Instagram"><span class="soc__i" style="-webkit-mask-image:url(https://cdn.simpleicons.org/instagram);mask-image:url(https://cdn.simpleicons.org/instagram)"></span></a>
+          <a class="soc" href="#" aria-label="LinkedIn" data-cursor title="LinkedIn"><span class="soc__i" style="-webkit-mask-image:url(../assets/social/linkedin.svg);mask-image:url(../assets/social/linkedin.svg)"></span></a>
+          <a class="soc" href="#" aria-label="Dribbble" data-cursor title="Dribbble"><span class="soc__i" style="-webkit-mask-image:url(https://cdn.simpleicons.org/dribbble);mask-image:url(https://cdn.simpleicons.org/dribbble)"></span></a>
+        </div>
+      </aside>
+    </section>
+  </main>
+  <div id="mk-footer"></div>
+</div>
+
+<script type="module">
+  import { BRAND_NAME, BRAND_SLOGAN, BRAND_SOCIAL } from "../brand/brand.js";
+  window.MARKA = { BRAND_NAME, BRAND_SLOGAN, BRAND_SOCIAL };
+</script>
+<script src="../ui_kits/website/motion.js"></script>
+<script src="../theme/site-chrome.js"></script>
+<script>
+  (function () {
+    var btn = document.getElementById("lead-send");
+    if (!btn) return;
+    btn.addEventListener("click", function () {
+      var name = document.getElementById("ad").value.trim();
+      var email = document.getElementById("ep").value.trim();
+      if (!name || !email) { alert("Lütfen ad ve e-posta gir."); return; }
+      if (window.MarkaLeads) window.MarkaLeads.submit({
+        name: name, email: email,
+        budget: document.getElementById("bt").value,
+        message: document.getElementById("ms").value.trim(),
+        source: "İletişim",
+      });
+      var f = document.getElementById("lead-form");
+      ["ad", "ep", "ms"].forEach(function (i) { document.getElementById(i).value = ""; });
+      var ok = document.getElementById("lead-ok"); if (ok) { ok.hidden = false; setTimeout(function () { ok.hidden = true; }, 6000); }
+    });
+  })();
+</script>
+</body>
+</html>

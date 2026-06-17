@@ -1,0 +1,18 @@
+<!-- @dsCard group="Spacing" viewport="700x170" name="Radii & shadows" subtitle="8–12px corners; restrained lift shadows" -->
+<!DOCTYPE html>
+<html lang="tr" data-theme="light"><head><meta charset="utf-8" />
+<link rel="stylesheet" href="../styles.css" />
+<style>
+  body{margin:0;background:var(--bg);color:var(--text);padding:26px;font-family:var(--font-mono);font-size:10px;}
+  .row{display:flex;gap:22px;flex-wrap:wrap;}
+  .item{display:flex;flex-direction:column;gap:8px;align-items:center;color:var(--text-muted);}
+  .box{width:88px;height:64px;background:var(--surface);border:1px solid var(--border);}
+</style></head>
+<body><div class="row">
+  <div class="item"><span class="box" style="border-radius:var(--radius-sm)"></span>radius-sm 8</div>
+  <div class="item"><span class="box" style="border-radius:var(--radius)"></span>radius 10</div>
+  <div class="item"><span class="box" style="border-radius:var(--radius-lg)"></span>radius-lg 12</div>
+  <div class="item"><span class="box" style="border-radius:var(--radius-pill)"></span>pill</div>
+  <div class="item"><span class="box" style="border-radius:var(--radius);border:0;box-shadow:var(--shadow-card)"></span>shadow-card</div>
+  <div class="item"><span class="box" style="border-radius:var(--radius);border:0;box-shadow:var(--shadow-lift)"></span>shadow-lift</div>
+</div></body></html>

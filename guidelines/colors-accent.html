@@ -1,0 +1,20 @@
+<!-- @dsCard group="Colors" viewport="700x150" name="Accent — Electric Green" subtitle="Primary accent ramp; --accent = green-500" -->
+<!DOCTYPE html>
+<html lang="tr" data-theme="light"><head><meta charset="utf-8" />
+<link rel="stylesheet" href="../styles.css" />
+<style>
+  body{margin:0;background:var(--bg);padding:20px;font-family:var(--font-mono);}
+  .row{display:flex;gap:10px;}
+  .sw{flex:1;display:flex;flex-direction:column;justify-content:flex-end;height:104px;border-radius:var(--radius);padding:10px;color:#0a0a0a;font-size:11px;line-height:1.3;}
+  .sw b{font-weight:600;}
+  .sw .hex{opacity:.7;}
+  .sw[data-light]{color:#fff;}
+</style></head>
+<body><div class="row">
+  <div class="sw" style="background:var(--green-100)"><b>100</b><span class="hex">#E3F9EF</span></div>
+  <div class="sw" style="background:var(--green-200)"><b>200</b><span class="hex">#B8F0D4</span></div>
+  <div class="sw" style="background:var(--green-400)"><b>400</b><span class="hex">#4ADE9C</span></div>
+  <div class="sw" style="background:var(--green-500)"><b>500 · accent</b><span class="hex">#16D17F</span></div>
+  <div class="sw" data-light style="background:var(--green-600)"><b>600 · hover</b><span class="hex">#0FB36B</span></div>
+  <div class="sw" data-light style="background:var(--green-700)"><b>700</b><span class="hex">#0A8F55</span></div>
+</div></body></html>

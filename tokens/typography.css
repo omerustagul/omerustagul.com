@@ -1,0 +1,50 @@
+/* ========================================================================
+   TYPOGRAPHY — General Sans (grotesk) for everything visible, JetBrains
+   Mono for labels / scores / dates / prices. Big editorial display scale.
+   ======================================================================== */
+:root {
+  /* Families */
+  --font-sans: "General Sans", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
+  --font-display: var(--font-sans);
+  --font-body: var(--font-sans);
+
+  /* Weights */
+  --fw-regular: 400; /* @kind font */
+  --fw-medium: 500; /* @kind font */
+  --fw-semibold: 600; /* @kind font */
+  --fw-bold: 700; /* @kind font */
+
+  /* Fluid display scale (clamp: min, vw, max) */
+  --fs-display-2xl: clamp(3.25rem, 9vw, 9rem); /* @kind font */
+  --fs-display-xl:  clamp(2.75rem, 6.5vw, 6.5rem); /* @kind font */
+  --fs-display-lg:  clamp(2.25rem, 4.5vw, 4.5rem); /* @kind font */
+  --fs-h1: clamp(2rem, 3.4vw, 3.25rem); /* @kind font */
+  --fs-h2: clamp(1.6rem, 2.4vw, 2.25rem); /* @kind font */
+  --fs-h3: clamp(1.3rem, 1.6vw, 1.6rem); /* @kind font */
+  --fs-h4: 1.25rem; /* @kind font */
+
+  /* Text scale */
+  --fs-lead: 1.25rem; /* @kind font */
+  --fs-body: 1rem; /* @kind font */
+  --fs-sm: 0.875rem; /* @kind font */
+  --fs-xs: 0.75rem; /* @kind font */
+
+  /* Mono label scale */
+  --fs-label: 0.75rem; /* @kind font */
+  --fs-meta: 0.8125rem; /* @kind font */
+
+  /* Line heights */
+  --lh-tight: 0.95; /* @kind font */
+  --lh-snug: 1.08; /* @kind font */
+  --lh-heading: 1.12; /* @kind font */
+  --lh-body: 1.6; /* @kind font */
+  --lh-relaxed: 1.75; /* @kind font */
+
+  /* Letter spacing */
+  --ls-display: -0.03em; /* @kind font */
+  --ls-heading: -0.02em; /* @kind font */
+  --ls-body: 0; /* @kind font */
+  --ls-label: 0.14em; /* @kind font */
+  --ls-label-wide: 0.2em; /* @kind font */
+}

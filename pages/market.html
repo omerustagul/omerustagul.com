@@ -1,0 +1,79 @@
+<!-- @dsCard group="Website" viewport="1440x820" name="Market" subtitle="Digital-product grid with category/format/price filters" -->
+<!DOCTYPE html>
+<html lang="tr" data-theme="light">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Market — Marka</title>
+<link rel="stylesheet" href="../styles.css" />
+<link rel="stylesheet" href="../ui_kits/website/site.css" />
+<link rel="stylesheet" href="pages.css" />
+<script>window.MK_BASE = "../";</script>
+<script src="../theme/theme.js"></script>
+<script src="../theme/pages.js"></script>
+<script src="../theme/members.js"></script>
+<script src="../theme/community-cfg.js"></script>
+<script src="../theme/bookings.js"></script>
+<script src="../theme/votes.js"></script>
+<script src="../theme/products.js"></script>
+<script src="../theme/i18n.js"></script>
+<script src="../theme/inline-edit.js"></script>
+</head>
+<body data-page="market">
+<div class="mk-site">
+  <div id="mk-header"></div>
+  <main class="page wrap">
+    <header class="page__head reveal">
+      <span class="eyebrow">Şablonlar & Dijital Ürünler</span>
+      <h1>Market</h1>
+      <p>Stüdyonun ve topluluğun ürettiği şablonlar, UI kit'ler, ikon setleri ve daha fazlası.</p>
+    </header>
+
+    <div class="filterbar reveal">
+      <button class="chip" aria-pressed="true">Tümü</button>
+      <button class="chip">UI Kit</button>
+      <button class="chip">Şablon</button>
+      <button class="chip">İkon</button>
+      <button class="chip">Figma</button>
+      <button class="chip">Webflow</button>
+      <span class="count">128 ürün</span>
+    </div>
+
+    <div class="grid-4" id="grid"></div>
+  </main>
+  <div id="mk-footer"></div>
+</div>
+
+<script type="module">
+  import { BRAND_NAME, BRAND_SLOGAN, BRAND_SOCIAL } from "../brand/brand.js";
+  window.MARKA = { BRAND_NAME, BRAND_SLOGAN, BRAND_SOCIAL };
+</script>
+<script>
+  const P = window.MarkaProducts;
+  const all = P.list();
+  const grid = document.getElementById("grid");
+  document.querySelector(".filterbar .count").textContent = all.length + " ürün";
+  function draw(f) {
+    const rows = !f || /Tüm/.test(f) ? all : all.filter(p => p.type === f || p.format === f || (f === "İkon" && p.type === "İkon Seti"));
+    grid.innerHTML = rows.map((p, i) => `
+      <a class="card card--sm reveal" href="product.html?id=${p.id}" data-cursor="Ürünü Gör">
+        <div style="position:relative">
+          <div class="ph"><div class="ph__in" style="filter:hue-rotate(${(p.hue||0)+i*32}deg)"></div><span class="ph__tag">ÜRÜN GÖRSELİ</span></div>
+          <span class="badge badge--invert" style="position:absolute;top:12px;left:12px">${p.type}</span>
+        </div>
+        <h3 class="card__title">${p.title}</h3>
+        <span class="card__meta">${p.seller}</span>
+        <div class="card__top" style="margin-top:.2rem"><span class="card__meta mono">${p.format}</span><span class="card__price">${P.priceStr(p)}</span></div>
+      </a>`).join("");
+    if (window.MarkaMotion) window.MarkaMotion.reveal();
+  }
+  draw();
+  document.querySelectorAll(".chip").forEach(ch => ch.addEventListener("click", () => {
+    document.querySelectorAll(".chip").forEach(c => c.setAttribute("aria-pressed", "false"));
+    ch.setAttribute("aria-pressed", "true"); draw(ch.textContent.trim());
+  }));
+</script>
+<script src="../ui_kits/website/motion.js"></script>
+<script src="../theme/site-chrome.js"></script>
+</body>
+</html>
