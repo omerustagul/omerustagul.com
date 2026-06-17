@@ -1,8 +1,12 @@
 // Seed — demo data mirroring the prototype (theme/members.js, courses, market).
 // Run: npm run seed  (after `prisma migrate dev`). Idempotent-ish: clears first.
 import "dotenv/config";
+import bcrypt from "bcryptjs";
 import { PrismaClient } from "../src/generated/prisma/client";
 import { PrismaPg } from "@prisma/adapter-pg";
+
+const ADMIN_EMAIL = "admin@marka.test";
+const ADMIN_PASSWORD = "admin1234"; // dev only — change in production
 
 const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL });
 const prisma = new PrismaClient({ adapter });
@@ -39,7 +43,12 @@ async function main() {
 
   // --- users: 1 admin + demo leaderboard members ---
   await prisma.user.create({
-    data: { name: "Marka Admin", email: "admin@marka.test", role: "ADMIN", passwordHash: null },
+    data: {
+      name: "Marka Admin",
+      email: ADMIN_EMAIL,
+      role: "ADMIN",
+      passwordHash: await bcrypt.hash(ADMIN_PASSWORD, 10),
+    },
   });
   for (const u of DEMO_USERS) {
     const email = u.name.toLowerCase().replace(/[^a-z]/g, "") + "@demo.co";
@@ -121,6 +130,7 @@ async function main() {
     gameScores: await prisma.gameScore.count(),
   };
   console.log("Seed complete:", counts);
+  console.log(`Admin login → ${ADMIN_EMAIL} / ${ADMIN_PASSWORD}`);
 }
 
 main()

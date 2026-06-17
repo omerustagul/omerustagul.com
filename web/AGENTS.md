@@ -15,7 +15,11 @@ The full roadmap and data-layer→DB mapping live in [`../MIGRATION.md`](../MIGR
 - **Next.js 16** (App Router, Turbopack) + **React 19** + **TypeScript**.
 - **Prisma 7** + **PostgreSQL** via the **`@prisma/adapter-pg` driver adapter**.
 - **No Tailwind** — styling uses the prototype's CSS-variable token system (see below).
-- Auth (planned, F2): **Auth.js / NextAuth v5**, hashed passwords, `ADMIN|EDITOR|MEMBER` roles.
+- Auth (F2, done): **NextAuth v5** Credentials + JWT, bcrypt hashing, `ADMIN|EDITOR|MEMBER`
+  roles. Split config: `auth.config.ts` (edge-safe, used by `proxy.ts`) + `auth.ts` (Node,
+  Credentials/Prisma). Route protection is `proxy.ts` (Next 16 renamed `middleware`→`proxy`;
+  export a default function). `jwt`/`session` callbacks live in `auth.config.ts` so the proxy
+  sees `role`. `trustHost: true` is required for self-host/Vercel.
 
 ## Architecture principle
 **Admin writes → API/Server Action → Prisma → Postgres → site reads.** The

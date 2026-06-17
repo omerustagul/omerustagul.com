@@ -33,3 +33,6 @@ desktop.ini
 # Misc
 .cache/
 *.tmp
+
+# Test artifacts
+.playwright-mcp/
