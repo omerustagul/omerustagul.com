@@ -1,180 +1,92 @@
-import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { formatDate, formatTRY, formatUSD } from "@/lib/format";
-import { Hero } from "@/components/home/Hero";
-import { Section, CardGrid } from "@/components/site/Section";
-import {
-  BlogCard,
-  Button,
-  CourseCard,
-  Marquee,
-  ProductCard,
-  ProjectCard,
-  SectionHeading,
-} from "@/components/ui";
+import { Hero } from "@/components/marka/Hero";
+import { LatestWorks, Partners, Academy, Blog, Market, Stats, CTABlocks } from "@/components/marka/Sections";
+import { Services } from "@/components/marka/Services";
 
-export const dynamic = "force-dynamic"; // always read fresh (F5 admin writes)
+export const dynamic = "force-dynamic";
+
+const HUES = [0, 40, -50, 70, -40, 30];
 
 export default async function Home() {
-  const [projects, courses, products, posts, partners, services, counts] = await Promise.all([
-    prisma.project.findMany({ orderBy: { order: "asc" }, take: 6 }),
-    prisma.course.findMany({ orderBy: { createdAt: "desc" }, take: 3 }),
+  const [projects, courses, products, posts, partners] = await Promise.all([
+    prisma.project.findMany({ orderBy: { order: "asc" }, include: { _count: { select: { votes: true } } } }),
+    prisma.course.findMany({ orderBy: { createdAt: "desc" }, take: 4 }),
     prisma.product.findMany({ orderBy: { createdAt: "desc" }, take: 4 }),
-    prisma.blogPost.findMany({
-      where: { publishedAt: { not: null } },
-      orderBy: { publishedAt: "desc" },
-      take: 4,
-    }),
+    prisma.blogPost.findMany({ where: { publishedAt: { not: null } }, orderBy: { publishedAt: "desc" }, take: 4 }),
     prisma.partner.findMany({ orderBy: { order: "asc" } }),
-    prisma.service.findMany({ orderBy: { order: "asc" } }),
-    Promise.all([prisma.project.count(), prisma.course.count(), prisma.product.count(), prisma.user.count()]),
   ]);
 
-  const [projectCount, courseCount, productCount, userCount] = counts;
+  const featured = projects.find((p) => p.featured) ?? projects[0];
+  const heroLines = featured ? featured.title.split(" ") : ["Atlas Finans", "yeniden", "markalaşma"];
+
+  const works = projects.slice(0, 3).map((p, i) => ({
+    title: p.title,
+    client: p.client ?? undefined,
+    category: p.category ?? "WEB",
+    hue: HUES[i % HUES.length],
+    href: `/projects/${p.slug}`,
+    votes: p._count.votes,
+  }));
+
+  const courseCards = courses.map((c, i) => ({
+    title: c.title,
+    instructor: "Marka Akademi",
+    rating: 4.9,
+    reviews: 120 + i * 18,
+    price: formatTRY(c.price),
+    level: ["Başlangıç", "Orta", "İleri", "Orta"][i % 4],
+    hue: HUES[i % HUES.length],
+    href: `/academy/${c.slug}`,
+  }));
+
+  const productCards = products.map((p, i) => ({
+    title: p.title,
+    seller: "Marka Studio",
+    format: ["Figma", "React", "SVG", "Keynote"][i % 4],
+    price: formatUSD(p.price),
+    hue: HUES[i % HUES.length],
+    href: `/market/${p.slug}`,
+  }));
+
+  const blogFeatured = posts[0]
+    ? {
+        title: posts[0].title,
+        excerpt: posts[0].excerpt ?? undefined,
+        category: posts[0].category ?? undefined,
+        date: formatDate(posts[0].publishedAt),
+        readTime: posts[0].readTime ?? undefined,
+        hue: 0,
+        href: `/blog/${posts[0].slug}`,
+      }
+    : undefined;
+  const blogRest = posts.slice(1, 4).map((p, i) => ({
+    title: p.title,
+    category: p.category ?? undefined,
+    date: formatDate(p.publishedAt),
+    readTime: p.readTime ?? undefined,
+    hue: HUES[(i + 1) % HUES.length],
+    href: `/blog/${p.slug}`,
+  }));
+
+  const partnerNames = partners.length ? partners.map((p) => p.name) : ["ATLAS", "NOVA", "KÖK", "VENTA", "ORBİT", "FORM", "PERA", "LUMA"];
 
   return (
-    <main>
-      <Hero />
-
-      {partners.length > 0 && (
-        <div style={{ borderBlock: "1px solid var(--border)", paddingBlock: "2rem" }}>
-          <Marquee speed={28}>
-            {partners.map((p) => (
-              <span key={p.id} className="u-label" style={{ fontSize: "1.25rem", color: "var(--text-muted)" }}>
-                {p.name}
-              </span>
-            ))}
-          </Marquee>
-        </div>
-      )}
-
-      <Section id="works">
-        <SectionHeading eyebrow="SON PROJELER" title="Öne çıkan işler" linkText="Tümünü Gör" linkHref="/projects" />
-        <CardGrid>
-          {projects.map((p) => (
-            <ProjectCard
-              key={p.id}
-              title={p.title}
-              client={p.client ?? undefined}
-              category={p.category ?? undefined}
-              tag={p.tag}
-              image={p.image ?? undefined}
-              href={`/projects/${p.slug}`}
-            />
-          ))}
-        </CardGrid>
-      </Section>
-
-      <Section id="services">
-        <SectionHeading eyebrow="HİZMETLER" title="Ne yapıyoruz" />
-        <div>
-          {services.map((s) => (
-            <div
-              key={s.id}
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-                gap: "2rem",
-                alignItems: "baseline",
-                padding: "1.5rem 0",
-                borderBottom: "1px solid var(--border)",
-              }}
-            >
-              <h3 style={{ fontSize: "var(--fs-h3)", letterSpacing: "var(--ls-heading)" }}>{s.title}</h3>
-              {s.description && (
-                <p style={{ color: "var(--text-muted)", maxWidth: "38ch", textAlign: "right" }}>{s.description}</p>
-              )}
-            </div>
-          ))}
-        </div>
-      </Section>
-
-      {courses.length > 0 && (
-        <Section id="academy">
-          <SectionHeading eyebrow="AKADEMİ" title="Kurslarla derinleş" linkText="Akademi'ye Git" linkHref="/academy" />
-          <CardGrid>
-            {courses.map((c) => (
-              <CourseCard key={c.id} title={c.title} price={formatTRY(c.price)} href={`/academy/${c.slug}`} />
-            ))}
-          </CardGrid>
-        </Section>
-      )}
-
-      {products.length > 0 && (
-        <Section id="market">
-          <SectionHeading eyebrow="DİJİTAL ÜRÜN" title="Market" linkText="Market'e Git" linkHref="/market" />
-          <CardGrid>
-            {products.map((p) => (
-              <ProductCard key={p.id} title={p.title} price={formatUSD(p.price)} href={`/market/${p.slug}`} />
-            ))}
-          </CardGrid>
-        </Section>
-      )}
-
-      {posts.length > 0 && (
-        <Section id="blog">
-          <SectionHeading eyebrow="GÜNCEL YAZILAR" title="Blog" linkText="Tümünü Gör" linkHref="/blog" />
-          <CardGrid>
-            {posts.map((p) => (
-              <BlogCard
-                key={p.id}
-                title={p.title}
-                excerpt={p.excerpt ?? undefined}
-                category={p.category ?? undefined}
-                readTime={p.readTime ?? undefined}
-                date={formatDate(p.publishedAt)}
-                href={`/blog/${p.slug}`}
-              />
-            ))}
-          </CardGrid>
-        </Section>
-      )}
-
-      {/* Stats — live counts from the DB */}
-      <Section>
-        <div style={{ display: "flex", gap: "3rem", flexWrap: "wrap", justifyContent: "space-between" }}>
-          {[
-            [`${projectCount}`, "proje"],
-            [`${courseCount}`, "kurs"],
-            [`${productCount}`, "dijital ürün"],
-            [`${userCount}`, "üye"],
-          ].map(([n, label]) => (
-            <div key={label}>
-              <div style={{ fontFamily: "var(--font-mono)", fontSize: "clamp(2rem, 5vw, 3.5rem)", fontWeight: 600 }}>
-                {n}
-              </div>
-              <div className="u-label" style={{ marginTop: ".4rem" }}>
-                {label}
-              </div>
-            </div>
-          ))}
-        </div>
-      </Section>
-
-      <section id="cta" className="u-container" style={{ paddingBlock: "var(--section-y, 6rem)" }}>
-        <div
-          style={{
-            border: "1px solid var(--border)",
-            borderRadius: "var(--radius-xl)",
-            padding: "clamp(2.5rem, 6vw, 5rem)",
-            textAlign: "center",
-          }}
-        >
-          <h2 style={{ fontSize: "clamp(2rem, 5vw, 4rem)", letterSpacing: "-0.03em", maxWidth: "18ch", margin: "0 auto" }}>
-            Projeni bizimle başlat.
-          </h2>
-          <div style={{ display: "flex", gap: "1rem", justifyContent: "center", marginTop: "2rem", flexWrap: "wrap" }}>
-            <Button href="/iletisim" variant="primary" size="lg">
-              Teklif Al
-            </Button>
-            <Link href="/showcase" style={{ alignSelf: "center" }}>
-              <Button variant="ghost" size="lg" iconRight="↗">
-                Tasarım Sistemi
-              </Button>
-            </Link>
-          </div>
-        </div>
-      </section>
+    <main id="content-main">
+      <Hero
+        lines={heroLines}
+        client={featured?.client ?? "Atlas Bank"}
+        service={featured?.category ?? "Marka · Web · Ürün"}
+        href={featured ? `/projects/${featured.slug}` : "#"}
+      />
+      {works.length > 0 && <LatestWorks works={works} />}
+      <Partners names={partnerNames} />
+      <Services />
+      {courseCards.length > 0 && <Academy courses={courseCards} />}
+      {blogFeatured && <Blog featured={blogFeatured} rest={blogRest} />}
+      {productCards.length > 0 && <Market products={productCards} />}
+      <Stats />
+      <CTABlocks />
     </main>
   );
 }

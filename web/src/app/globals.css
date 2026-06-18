@@ -3,3 +3,10 @@
    @import must stay first. */
 @import "../styles/marka.css";
 @import "../styles/components.css";
+@import "../styles/site.css";
+
+/* App override: stack each hero headline line regardless of word length
+   (the prototype relied on long phrases wrapping under max-width). */
+.hero h1 .mask {
+  display: block;
+}

@@ -1,14 +1,21 @@
-import { SiteHeader } from "@/components/site/SiteHeader";
-import { SiteFooter } from "@/components/site/SiteFooter";
+import { auth } from "@/auth";
+import { getLocale } from "@/lib/i18n-server";
+import { MarkaHeader } from "@/components/marka/MarkaHeader";
+import { MarkaFooter } from "@/components/marka/MarkaFooter";
+import { Motion } from "@/components/marka/Motion";
 
-// Marketing/site chrome shared by the homepage + listing/detail pages.
-// (/login, /admin, /showcase live outside this group and have no chrome.)
-export default function SiteLayout({ children }: { children: React.ReactNode }) {
+export const dynamic = "force-dynamic";
+
+// Shared site chrome (faithful port of the prototype's theme/site-chrome.js
+// classic header + columns footer) + the motion interaction layer.
+export default async function SiteLayout({ children }: { children: React.ReactNode }) {
+  const [session, locale] = await Promise.all([auth(), getLocale()]);
   return (
-    <>
-      <SiteHeader />
+    <div className="mk-site">
+      <MarkaHeader locale={locale} userName={session?.user?.name ?? null} />
       {children}
-      <SiteFooter />
-    </>
+      <MarkaFooter />
+      <Motion />
+    </div>
   );
 }
