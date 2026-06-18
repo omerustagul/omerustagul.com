@@ -8,6 +8,15 @@ import { PrismaPg } from "@prisma/adapter-pg";
 const ADMIN_EMAIL = "admin@marka.test";
 const ADMIN_PASSWORD = "admin1234"; // dev only — change in production
 
+const TR: Record<string, string> = { ç: "c", ğ: "g", ı: "i", ö: "o", ş: "s", ü: "u" };
+function slugify(s: string): string {
+  return s
+    .toLowerCase()
+    .replace(/[çğıöşü]/g, (m) => TR[m] || m)
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/(^-|-$)/g, "");
+}
+
 const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL });
 const prisma = new PrismaClient({ adapter });
 
@@ -31,6 +40,10 @@ async function main() {
   await prisma.purchase.deleteMany();
   await prisma.review.deleteMany();
   await prisma.projectVote.deleteMany();
+  await prisma.project.deleteMany();
+  await prisma.blogPost.deleteMany();
+  await prisma.partner.deleteMany();
+  await prisma.service.deleteMany();
   await prisma.lesson.deleteMany();
   await prisma.module.deleteMany();
   await prisma.course.deleteMany();
@@ -112,6 +125,58 @@ async function main() {
     data: { title: "İkon Paketi", slug: "ikon-paketi", price: 29 },
   });
 
+  // --- portfolio projects ---
+  const PROJECTS = [
+    { title: "Atlas Rebrand", client: "Atlas Teknoloji", category: "MARKA", featured: true },
+    { title: "Forma E-ticaret", client: "Forma", category: "WEB" },
+    { title: "Küre Mobil Uygulama", client: "Küre", category: "MOBİL" },
+    { title: "Lumen Kampanya", client: "Lumen", category: "KAMPANYA" },
+    { title: "Verto Kurumsal Site", client: "Verto", category: "WEB" },
+    { title: "Prizma Marka Kimliği", client: "Prizma", category: "MARKA" },
+  ];
+  await Promise.all(
+    PROJECTS.map((p, i) =>
+      prisma.project.create({
+        data: { ...p, slug: slugify(p.title), order: i },
+      }),
+    ),
+  );
+
+  // --- blog posts ---
+  const POSTS = [
+    { title: "Editöryel tasarımın gücü", category: "MAKALE", readTime: "6 dk", excerpt: "Beyaz alanı bir araç olarak kullanmak neden işe yarar?", featured: true },
+    { title: "Marka sesini bulmak", category: "REHBER", readTime: "8 dk", excerpt: "Tutarlı bir ton, güveni nasıl inşa eder?" },
+    { title: "Hareketin ritmi", category: "MOTION", readTime: "5 dk", excerpt: "Premium animasyonun arkasındaki zamanlama prensipleri." },
+    { title: "Tipografi ölçeği kurmak", category: "MAKALE", readTime: "7 dk", excerpt: "Akışkan clamp ölçekleriyle hiyerarşi." },
+  ];
+  await Promise.all(
+    POSTS.map((p) =>
+      prisma.blogPost.create({
+        data: { ...p, slug: slugify(p.title), publishedAt: new Date("2026-06-12T09:00:00Z") },
+      }),
+    ),
+  );
+
+  // --- partners (marquee) ---
+  await Promise.all(
+    ["NEXUS", "FORMA", "ATLAS", "VERTO", "KÜRE", "LUMEN", "PRIZMA"].map((name, i) =>
+      prisma.partner.create({ data: { name, order: i } }),
+    ),
+  );
+
+  // --- services ---
+  const SERVICES = [
+    { title: "Marka Kimliği", description: "Logo, ton ve görsel sistem." },
+    { title: "Web Tasarım & Geliştirme", description: "Editöryel, performanslı siteler." },
+    { title: "Ürün & UX", description: "Araştırmadan arayüze dijital ürünler." },
+    { title: "Kampanya & İçerik", description: "Lansman ve büyüme kampanyaları." },
+  ];
+  await Promise.all(
+    SERVICES.map((s, i) =>
+      prisma.service.create({ data: { ...s, slug: slugify(s.title), order: i } }),
+    ),
+  );
+
   // --- content & settings ---
   await prisma.siteSettings.create({
     data: {
@@ -127,6 +192,10 @@ async function main() {
     users: await prisma.user.count(),
     courses: await prisma.course.count(),
     products: await prisma.product.count(),
+    projects: await prisma.project.count(),
+    posts: await prisma.blogPost.count(),
+    partners: await prisma.partner.count(),
+    services: await prisma.service.count(),
     gameScores: await prisma.gameScore.count(),
   };
   console.log("Seed complete:", counts);

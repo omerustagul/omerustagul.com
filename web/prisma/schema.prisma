@@ -141,8 +141,53 @@ model ProjectVote {
   userId    String
   createdAt DateTime @default(now())
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
 
   @@unique([projectId, userId])
+}
+
+// ------------------------------------------------------ portfolio & content
+model Project {
+  id        String        @id @default(cuid())
+  title     String
+  slug      String        @unique
+  client    String?
+  category  String? // "MARKA" | "WEB" | "MOBİL" ...
+  tag       String        @default("PROJE")
+  image     String?
+  featured  Boolean       @default(false)
+  order     Int           @default(0)
+  createdAt DateTime      @default(now())
+  votes     ProjectVote[]
+}
+
+model BlogPost {
+  id          String    @id @default(cuid())
+  title       String
+  slug        String    @unique
+  excerpt     String?
+  body        String?
+  category    String?
+  image       String?
+  readTime    String?
+  featured    Boolean   @default(false)
+  publishedAt DateTime? // null = draft
+  createdAt   DateTime  @default(now())
+}
+
+model Partner {
+  id    String @id @default(cuid())
+  name  String
+  logo  String?
+  order Int    @default(0)
+}
+
+model Service {
+  id          String  @id @default(cuid())
+  title       String
+  slug        String  @unique
+  description String?
+  order       Int     @default(0)
 }
 
 model CommunityConfig {

@@ -53,7 +53,7 @@ export function CourseCard({
         </h3>
         {instructor && <span className="mk-card__meta">{instructor}</span>}
         <div className="mk-card__toprow" style={{ marginTop: ".35rem" }}>
-          <Rating value={rating} count={reviews} />
+          {rating > 0 ? <Rating value={rating} count={reviews} /> : <span />}
           {price != null && <span className="mk-card__price">{price}</span>}
         </div>
       </div>
