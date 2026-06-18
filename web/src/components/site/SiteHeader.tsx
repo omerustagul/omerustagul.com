@@ -7,6 +7,7 @@ const NAV: [string, string][] = [
   ["Akademi", "/academy"],
   ["Market", "/market"],
   ["Blog", "/blog"],
+  ["Oyunlar", "/oyunlar"],
 ];
 
 export function SiteHeader() {

@@ -12,6 +12,7 @@ const LINKS: [string, string][] = [
   ["/admin/services", "Hizmetler"],
   ["/admin/partners", "Partnerler"],
   ["/admin/leads", "Talepler"],
+  ["/admin/bookings", "Randevular"],
   ["/admin/settings", "Ayarlar"],
 ];
 

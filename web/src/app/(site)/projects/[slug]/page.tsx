@@ -3,6 +3,8 @@ import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { Section } from "@/components/site/Section";
 import { Badge, Button, Media } from "@/components/ui";
+import { VoteButton } from "@/components/projects/VoteButton";
+import { auth } from "@/auth";
 
 export const dynamic = "force-dynamic";
 
@@ -13,6 +15,15 @@ export default async function ProjectDetail({ params }: { params: Promise<{ slug
     include: { _count: { select: { votes: true } } },
   });
   if (!project) notFound();
+
+  const session = await auth();
+  let voted = false;
+  if (session?.user?.id) {
+    const v = await prisma.projectVote.findUnique({
+      where: { projectId_userId: { projectId: project.id, userId: session.user.id } },
+    });
+    voted = !!v;
+  }
 
   return (
     <main className="u-container" style={{ paddingBlock: "clamp(2rem, 6vw, 5rem)" }}>
@@ -60,9 +71,14 @@ export default async function ProjectDetail({ params }: { params: Promise<{ slug
         </div>
       </Section>
 
-      <div style={{ display: "flex", gap: "2rem", alignItems: "center", flexWrap: "wrap" }}>
-        <span className="u-label">{project._count.votes} oy</span>
-        <Button href="/iletisim" variant="primary">
+      <div style={{ display: "flex", gap: "1rem", alignItems: "center", flexWrap: "wrap" }}>
+        <VoteButton
+          projectId={project.id}
+          initialCount={project._count.votes}
+          initialVoted={voted}
+          authed={!!session?.user}
+        />
+        <Button href="/iletisim" variant="secondary">
           Benzer Proje Başlat
         </Button>
       </div>
