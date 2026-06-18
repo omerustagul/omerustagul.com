@@ -20,7 +20,7 @@ export function MarkaFooter() {
     <footer className="ftr ftr--columns">
       <div className="wrap">
         <div className="ftr__cta reveal">
-          <h2>Bir sonraki büyük işini birlikte yapalım</h2>
+          <h2>{BRAND_NAME} ile projeni hayata geçir</h2>
           <Link href="/iletisim" className="btn btn--primary btn--lg" data-magnetic="" data-cursor="İletişim">
             İletişime Geç <span className="arr">→</span>
           </Link>

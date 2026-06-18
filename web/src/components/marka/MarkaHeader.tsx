@@ -8,18 +8,23 @@ import { useTheme } from "@/components/theme/ThemeProvider";
 import { LOCALE_COOKIE, t, type Locale, type MsgKey } from "@/lib/i18n";
 
 const NAV: [MsgKey, string][] = [
-  ["projects", "/projects"],
-  ["services", "/#services"],
+  ["partners", "/projects"],
   ["academy", "/academy"],
-  ["market", "/market"],
   ["blog", "/blog"],
-  ["games", "/oyunlar"],
+  ["market", "/market"],
 ];
 
 function socUrl(label: string) {
   const slug = label.toLowerCase().replace(/[^a-z0-9]/g, "");
   return `https://cdn.simpleicons.org/${slug}`;
 }
+
+const GLOBE = (
+  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" aria-hidden="true">
+    <circle cx="12" cy="12" r="9" />
+    <path d="M3 12h18M12 3a14 14 0 010 18M12 3a14 14 0 000 18" />
+  </svg>
+);
 
 export function MarkaHeader({ locale, userName }: { locale: Locale; userName: string | null }) {
   const router = useRouter();
@@ -41,6 +46,9 @@ export function MarkaHeader({ locale, userName }: { locale: Locale; userName: st
           </Link>
 
           <nav className="nav nav__primary" aria-label="Birincil">
+            <Link href="/projects" className="navlink mega-trigger">
+              {t(locale, "discover")} <span className="chev" aria-hidden="true">⌄</span>
+            </Link>
             {NAV.map(([key, href]) => (
               <a key={key} href={href} className="hdr__links">
                 {t(locale, key)}
@@ -64,10 +72,12 @@ export function MarkaHeader({ locale, userName }: { locale: Locale; userName: st
               <button
                 className="lang-switch__btn"
                 type="button"
-                aria-label="Dil"
+                aria-label="Dil / Language"
                 onClick={() => setLang(locale === "tr" ? "en" : "tr")}
               >
+                {GLOBE}
                 <span>{locale.toUpperCase()}</span>
+                <span className="chev" aria-hidden="true">⌄</span>
               </button>
             </div>
 
@@ -94,7 +104,7 @@ export function MarkaHeader({ locale, userName }: { locale: Locale; userName: st
               </Link>
             )}
 
-            <Link className="btn btn--primary" href="/iletisim" data-magnetic="">
+            <Link className="btn btn--primary" href="/randevu" data-magnetic="">
               {t(locale, "quote")} <span className="arr">→</span>
             </Link>
 
@@ -127,7 +137,7 @@ export function MarkaHeader({ locale, userName }: { locale: Locale; userName: st
           <Link className="btn btn--ghost btn--lg" href="/login" onClick={() => setOpen(false)}>
             {t(locale, "login")}
           </Link>
-          <Link className="btn btn--primary btn--lg" href="/iletisim" onClick={() => setOpen(false)}>
+          <Link className="btn btn--primary btn--lg" href="/randevu" onClick={() => setOpen(false)}>
             {t(locale, "quote")} <span className="arr">→</span>
           </Link>
         </div>

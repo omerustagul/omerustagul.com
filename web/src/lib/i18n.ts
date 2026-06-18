@@ -5,17 +5,21 @@ export const LOCALE_COOKIE = "mk-lang";
 
 const dict = {
   tr: {
+    discover: "Keşfet",
+    partners: "İş Ortakları",
     projects: "Projeler",
     services: "Hizmetler",
     academy: "Akademi",
     market: "Market",
     blog: "Blog",
     games: "Oyunlar",
-    login: "Giriş",
-    quote: "Teklif Al",
+    login: "Giriş Yap",
+    quote: "Görüşme Yap",
     slogan: "Dijitalde yeni standart.",
   },
   en: {
+    discover: "Explore",
+    partners: "Partners",
     projects: "Projects",
     services: "Services",
     academy: "Academy",
@@ -23,7 +27,7 @@ const dict = {
     blog: "Blog",
     games: "Games",
     login: "Sign in",
-    quote: "Get a Quote",
+    quote: "Book a call",
     slogan: "The new standard in digital.",
   },
 } as const;
