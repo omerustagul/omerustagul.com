@@ -2,3 +2,4 @@
    base resets). Lives in src/styles/, copied from the prototype root. This
    @import must stay first. */
 @import "../styles/marka.css";
+@import "../styles/components.css";
