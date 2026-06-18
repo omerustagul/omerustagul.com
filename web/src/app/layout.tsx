@@ -17,7 +17,7 @@ export default function RootLayout({
   // data-theme is read by the Marka token system. Fonts/resets come from
   // globals.css → src/styles/marka.css, not next/font.
   return (
-    <html lang="tr" data-theme="light">
+    <html lang="tr" data-theme="light" suppressHydrationWarning>
       <body>
         {/* Apply the saved theme before first paint (no flash). Static asset
             in /public — render-blocking, runs before hydration. */}
