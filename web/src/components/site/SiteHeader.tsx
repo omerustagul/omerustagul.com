@@ -2,11 +2,11 @@ import Link from "next/link";
 import { Button, Logo } from "@/components/ui";
 
 const NAV: [string, string][] = [
-  ["Projeler", "#works"],
-  ["Hizmetler", "#services"],
-  ["Akademi", "#academy"],
-  ["Market", "#market"],
-  ["Blog", "#blog"],
+  ["Projeler", "/projects"],
+  ["Hizmetler", "/#services"],
+  ["Akademi", "/academy"],
+  ["Market", "/market"],
+  ["Blog", "/blog"],
 ];
 
 export function SiteHeader() {
@@ -51,7 +51,7 @@ export function SiteHeader() {
           <Button href="/login" variant="ghost" size="sm">
             Giriş
           </Button>
-          <Button href="#cta" variant="primary" size="sm">
+          <Button href="/iletisim" variant="primary" size="sm">
             Teklif Al
           </Button>
         </div>
