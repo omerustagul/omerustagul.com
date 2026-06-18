@@ -36,3 +36,7 @@ desktop.ini
 
 # Test artifacts
 .playwright-mcp/
+
+# Uploaded media (dev only — production uses Vercel Blob / S3)
+web/public/uploads/*
+!web/public/uploads/.gitkeep

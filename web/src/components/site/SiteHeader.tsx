@@ -1,16 +1,21 @@
 import Link from "next/link";
 import { Button, Logo } from "@/components/ui";
+import { t, type MsgKey } from "@/lib/i18n";
+import { getLocale } from "@/lib/i18n-server";
+import { LanguageSwitcher } from "@/components/site/LanguageSwitcher";
 
-const NAV: [string, string][] = [
-  ["Projeler", "/projects"],
-  ["Hizmetler", "/#services"],
-  ["Akademi", "/academy"],
-  ["Market", "/market"],
-  ["Blog", "/blog"],
-  ["Oyunlar", "/oyunlar"],
+const NAV: [MsgKey, string][] = [
+  ["projects", "/projects"],
+  ["services", "/#services"],
+  ["academy", "/academy"],
+  ["market", "/market"],
+  ["blog", "/blog"],
+  ["games", "/oyunlar"],
 ];
 
-export function SiteHeader() {
+export async function SiteHeader() {
+  const locale = await getLocale();
+
   return (
     <header
       style={{
@@ -24,36 +29,27 @@ export function SiteHeader() {
     >
       <div
         className="u-container"
-        style={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          gap: "2rem",
-          height: "4.5rem",
-        }}
+        style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "2rem", height: "4.5rem" }}
       >
         <Link href="/" style={{ textDecoration: "none" }}>
           <Logo size="sm" />
         </Link>
 
         <nav style={{ display: "flex", gap: "1.75rem" }}>
-          {NAV.map(([label, href]) => (
-            <a
-              key={label}
-              href={href}
-              style={{ fontSize: "var(--fs-sm)", color: "var(--text-muted)" }}
-            >
-              {label}
+          {NAV.map(([key, href]) => (
+            <a key={key} href={href} style={{ fontSize: "var(--fs-sm)", color: "var(--text-muted)" }}>
+              {t(locale, key)}
             </a>
           ))}
         </nav>
 
-        <div style={{ display: "flex", gap: ".75rem", alignItems: "center" }}>
+        <div style={{ display: "flex", gap: ".9rem", alignItems: "center" }}>
+          <LanguageSwitcher current={locale} />
           <Button href="/login" variant="ghost" size="sm">
-            Giriş
+            {t(locale, "login")}
           </Button>
           <Button href="/iletisim" variant="primary" size="sm">
-            Teklif Al
+            {t(locale, "quote")}
           </Button>
         </div>
       </div>

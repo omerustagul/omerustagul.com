@@ -12,7 +12,7 @@ export default async function AdminBlog() {
   const items = await prisma.blogPost.findMany({ orderBy: { createdAt: "desc" } });
   return (
     <div>
-      <AdminHeader title="Blog" />
+      <AdminHeader title="Blog" action={{ href: "/admin/blog/ai", label: "✨ AI ile Taslak" }} />
       <Table head={["Başlık", "Kategori", "Durum", ""]}>
         {items.map((p) => (
           <tr key={p.id}>
