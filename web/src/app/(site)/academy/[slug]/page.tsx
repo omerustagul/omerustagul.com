@@ -8,6 +8,13 @@ import { auth } from "@/auth";
 
 export const dynamic = "force-dynamic";
 
+export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params;
+  const course = await prisma.course.findUnique({ where: { slug } });
+  if (!course) return {};
+  return { title: course.title, openGraph: { title: course.title } };
+}
+
 export default async function CourseDetail({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   const course = await prisma.course.findUnique({

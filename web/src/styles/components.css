@@ -250,3 +250,13 @@
   transition: opacity var(--dur-fast) var(--ease-out), transform var(--dur-fast) var(--ease-out);
 }
 .mk-card:hover .mk-card__cursorlabel { opacity: 1; transform: translateY(0) scale(1); }
+
+/* ------------------------------------------------------ a11y: skip-to-content */
+.mk-skip {
+  position: fixed; left: 1rem; top: -4rem; z-index: 200;
+  background: var(--accent); color: var(--on-accent);
+  padding: .65rem 1.1rem; border-radius: var(--radius);
+  font-family: var(--font-sans); font-weight: var(--fw-medium);
+  transition: top var(--dur-fast) var(--ease-out);
+}
+.mk-skip:focus-visible { top: 1rem; outline: 2px solid var(--focus-ring); outline-offset: 2px; }

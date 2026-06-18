@@ -8,6 +8,13 @@ import { BuyButton } from "@/components/market/BuyButton";
 
 export const dynamic = "force-dynamic";
 
+export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params;
+  const product = await prisma.product.findUnique({ where: { slug } });
+  if (!product) return {};
+  return { title: product.title, openGraph: { title: product.title } };
+}
+
 export default async function ProductDetail({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   const product = await prisma.product.findUnique({

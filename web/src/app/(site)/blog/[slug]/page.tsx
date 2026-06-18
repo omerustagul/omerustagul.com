@@ -7,6 +7,18 @@ import { ReadingProgress } from "@/components/blog/ReadingProgress";
 
 export const dynamic = "force-dynamic";
 
+export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params;
+  const post = await prisma.blogPost.findUnique({ where: { slug } });
+  if (!post) return {};
+  const description = post.excerpt ?? undefined;
+  return {
+    title: post.title,
+    description,
+    openGraph: { type: "article", title: post.title, description },
+  };
+}
+
 export default async function BlogPostPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   const post = await prisma.blogPost.findUnique({ where: { slug } });
