@@ -1,23 +1,29 @@
 import { prisma } from "@/lib/prisma";
 import { formatUSD } from "@/lib/format";
-import { PageHero, Section, CardGrid } from "@/components/site/Section";
-import { ProductCard } from "@/components/ui";
+import { PageHead } from "@/components/marka/page-parts";
+import { MarketGrid } from "@/components/marka/grids";
 
 export const dynamic = "force-dynamic";
-export const metadata = { title: "Market — Marka" };
+export const metadata = { title: "Market" };
+
+const FORMATS = ["Figma", "React", "SVG", "Keynote"];
+const TYPES = ["UI Kit", "Şablon", "İkon Seti", "Sunum"];
 
 export default async function MarketPage() {
   const products = await prisma.product.findMany({ orderBy: { createdAt: "desc" } });
+  const items = products.map((p, i) => ({
+    title: p.title,
+    seller: "Marka Studio",
+    format: FORMATS[i % FORMATS.length],
+    type: TYPES[i % TYPES.length],
+    price: formatUSD(p.price),
+    slug: p.slug,
+    hue: i * 32,
+  }));
   return (
-    <main>
-      <PageHero eyebrow="DİJİTAL ÜRÜN" title="Market" lead="Hazır UI kitleri, şablonlar ve dijital ürünler." />
-      <Section>
-        <CardGrid>
-          {products.map((p) => (
-            <ProductCard key={p.id} title={p.title} price={formatUSD(p.price)} href={`/market/${p.slug}`} />
-          ))}
-        </CardGrid>
-      </Section>
+    <main className="page wrap">
+      <PageHead eyebrow="Şablonlar & Dijital Ürünler" title="Market" sub="Stüdyonun ve topluluğun ürettiği şablonlar, UI kit'ler, ikon setleri ve daha fazlası." />
+      <MarketGrid items={items} />
     </main>
   );
 }

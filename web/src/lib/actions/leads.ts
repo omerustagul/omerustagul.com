@@ -13,10 +13,12 @@ export async function createLead(_prev: State | undefined, formData: FormData): 
   const name = String(formData.get("name") ?? "").trim();
   const email = String(formData.get("email") ?? "").trim();
   const message = String(formData.get("message") ?? "").trim();
+  const budget = String(formData.get("budget") ?? "").trim();
 
   if (!name || !email) return { error: "Ad ve e-posta gerekli." };
   if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return { error: "Geçerli bir e-posta girin." };
 
-  await prisma.lead.create({ data: { name, email, message: message || null } });
+  const full = budget ? `Bütçe: ${budget}\n\n${message}` : message;
+  await prisma.lead.create({ data: { name, email, message: full || null } });
   return { ok: true };
 }
