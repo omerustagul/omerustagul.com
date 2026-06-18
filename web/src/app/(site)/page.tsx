@@ -60,7 +60,7 @@ export default async function Home() {
       <Services />
       <Academy courses={COURSES} />
       <Collections earnedIds={earnedIds} />
-      <GamesSection />
+      <GamesSection authed={!!session?.user} />
       <Blog featured={BLOG_FEATURED} rest={BLOG_REST} />
       <Market products={PRODUCTS} />
       <Stats />
