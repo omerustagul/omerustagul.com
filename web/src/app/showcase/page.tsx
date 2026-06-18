@@ -1,8 +1,34 @@
 "use client";
 
 import { useState } from "react";
-import { Badge, Button, Input, Logo, Rating, SectionHeading, Select, Tag } from "@/components/ui";
+import {
+  Avatar,
+  AvatarStack,
+  Badge,
+  BlogCard,
+  Button,
+  CourseCard,
+  IconButton,
+  Input,
+  Logo,
+  Marquee,
+  ProductCard,
+  ProjectCard,
+  Rating,
+  SectionHeading,
+  Select,
+  Tag,
+} from "@/components/ui";
 import { ThemeControls } from "@/components/theme/ThemeControls";
+
+const PEOPLE = [
+  { name: "Ece K." },
+  { name: "Mert S." },
+  { name: "Lale Y." },
+  { name: "Can A." },
+  { name: "Su D." },
+  { name: "Ada Y." },
+];
 
 const FILTERS = ["Tümü", "Web", "Marka", "Mobil", "Kampanya"];
 
@@ -99,6 +125,69 @@ export default function ShowcasePage() {
                 <option>₺50.000 – ₺150.000</option>
                 <option>₺150.000+</option>
               </Select>
+            </div>
+          </Block>
+
+          <Block label="Avatar & IconButton">
+            <div style={{ display: "flex", gap: "2rem", alignItems: "center", flexWrap: "wrap" }}>
+              <Avatar name="Ece Kaya" size="lg" />
+              <AvatarStack people={PEOPLE} max={4} size="md" />
+              <div style={{ display: "flex", gap: ".6rem" }}>
+                <IconButton label="Önceki">←</IconButton>
+                <IconButton label="Sonraki" variant="solid">
+                  →
+                </IconButton>
+                <IconButton label="Kapat" variant="ghost">
+                  ✕
+                </IconButton>
+              </div>
+            </div>
+          </Block>
+
+          <Block label="Marquee — iş ortakları">
+            <Marquee speed={24}>
+              {["NEXUS", "FORMA", "ATLAS", "VERTO", "KÜRE", "LUMEN", "PRIZMA"].map((n) => (
+                <span
+                  key={n}
+                  className="u-label"
+                  style={{ fontSize: "1.25rem", color: "var(--text-muted)" }}
+                >
+                  {n}
+                </span>
+              ))}
+            </Marquee>
+          </Block>
+
+          <Block label="Kartlar — Proje · Kurs · Ürün · Blog">
+            <div
+              style={{
+                display: "grid",
+                gap: "2rem",
+                gridTemplateColumns: "repeat(auto-fill, minmax(15rem, 1fr))",
+              }}
+            >
+              <ProjectCard title="Atlas Rebrand" client="Atlas Teknoloji" category="MARKA" />
+              <CourseCard
+                title="İleri Motion Design"
+                instructor="Mert Soy"
+                rating={4.8}
+                reviews={64}
+                price="₺1.299"
+                level="ORTA"
+              />
+              <ProductCard
+                title="Marka UI Kit"
+                seller="Marka Studio"
+                price="59 USD"
+                format="FIGMA + REACT"
+              />
+              <BlogCard
+                title="Editöryel tasarımın gücü"
+                excerpt="Beyaz alanı bir araç olarak kullanmak neden işe yarar?"
+                category="MAKALE"
+                date="12 Haz 2026"
+                readTime="6 dk"
+              />
             </div>
           </Block>
         </div>
