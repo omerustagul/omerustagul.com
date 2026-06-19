@@ -8,6 +8,7 @@ import { GamesSection } from "@/components/marka/games-section";
 import { getMyGameStats } from "@/lib/actions/games";
 import { getHomeLayout } from "@/lib/home-layout-server";
 import { getPageText } from "@/lib/page-text-server";
+import { getCommunityConfig } from "@/lib/community-config-server";
 import { CustomSectionView } from "@/components/marka/CustomSectionView";
 import { InlineEditor } from "@/components/marka/InlineEditor";
 import { Fragment, type ReactNode } from "react";
@@ -86,9 +87,10 @@ export default async function Home() {
   const myFollowRows = userId ? await prisma.follow.findMany({ where: { userId }, select: { collectionId: true } }) : [];
   const followingSet = new Set(myFollowRows.map((f) => f.collectionId));
   const followGroups = await prisma.follow.groupBy({ by: ["collectionId"], _count: { _all: true } });
+  const community = await getCommunityConfig();
   const following: Record<string, boolean> = {};
   const extra: Record<string, number> = {};
-  for (const id of ["k1", "k2", "k3", "k4"]) following[id] = followingSet.has(id);
+  for (const c of community.collections) following[c.id] = followingSet.has(c.id);
   for (const g of followGroups) extra[g.collectionId] = g._count._all;
   const follows = { following, extra };
 
@@ -122,8 +124,8 @@ export default async function Home() {
     partners: <Partners names={PARTNERS} />,
     services: <Services />,
     academy: <Academy courses={COURSES} overrides={pageText} />,
-    collections: <Collections earnedIds={earnedIds} authed={authed} follows={follows} overrides={pageText} />,
-    games: <GamesSection authed={authed} stats={gameStats} />,
+    collections: <Collections earnedIds={earnedIds} authed={authed} follows={follows} overrides={pageText} collections={community.collections} />,
+    games: <GamesSection authed={authed} stats={gameStats} enabledGames={community.games} dailyLimit={community.dailyLimit} />,
     blog: <Blog featured={BLOG_FEATURED} rest={BLOG_REST} overrides={pageText} />,
     market: <Market products={PRODUCTS} overrides={pageText} />,
     stats: <Stats />,

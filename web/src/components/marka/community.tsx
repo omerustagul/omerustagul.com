@@ -187,18 +187,21 @@ export function Collections({
   authed = false,
   follows = { following: {}, extra: {} },
   overrides,
+  collections,
 }: {
   earnedIds?: string[];
   authed?: boolean;
   follows?: FollowState;
   overrides?: PageTextMap;
+  collections?: (typeof COLLECTIONS)[number][];
 }) {
+  const cols = collections && collections.length ? collections : COLLECTIONS;
   return (
     <section className="section wrap collections" aria-label="Koleksiyonlar">
       <SectionHead eyebrow="İlham" title="Koleksiyonlar" sub="Küratörlü proje koleksiyonlarını takip et, ilham akışını kişiselleştir." linkText="Tümünü Gör" linkHref="/blog" kb="collections" overrides={overrides} />
       <Badges earnedIds={earnedIds} />
       <div className="grid-4 collections__grid">
-        {COLLECTIONS.map((c) => (
+        {cols.map((c) => (
           <CollectionCard
             key={c.id}
             c={c}

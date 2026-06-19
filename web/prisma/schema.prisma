@@ -42,6 +42,9 @@ model Course {
   title       String
   slug        String       @unique
   price       Int          @default(0)
+  level       String? // Başlangıç | Orta | İleri
+  topic       String? // Tasarım | Geliştirme | Motion | Strateji
+  instructor  String?
   createdAt   DateTime     @default(now())
   modules     Module[]
   enrollments Enrollment[]
@@ -96,6 +99,9 @@ model Product {
   title     String
   slug      String     @unique
   price     Int        @default(0)
+  type      String? // UI Kit | Şablon | İkon Seti | Sunum
+  format    String? // Figma | React | SVG | Keynote
+  seller    String?
   createdAt DateTime   @default(now())
   reviews   Review[]
 }
@@ -273,6 +279,11 @@ model HomeLayout {
 model PageText {
   id   Int  @id @default(1)
   data Json // { [key: string]: string } — inline text overrides
+}
+
+model AppSettings {
+  id   Int  @id @default(1)
+  data Json // brand, logos, AI, SEO, regional, advanced settings blob
 }
 
 model Translation {

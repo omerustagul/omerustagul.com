@@ -28,7 +28,7 @@ const CSS = `
   position:absolute; top:1rem; right:1rem; z-index:2;
   font-family:var(--font-mono); font-size:var(--fs-label); letter-spacing:var(--ls-label);
   text-transform:uppercase; color:var(--on-accent); background:var(--accent);
-  padding:.45em .8em; border-radius:var(--radius-pill);
+  padding:.45em .8em; border-radius:var(--radius-sm);
   transform:translateY(-6px) scale(.9); opacity:0;
   transition:opacity var(--dur-fast) var(--ease-out), transform var(--dur-fast) var(--ease-out);
 }

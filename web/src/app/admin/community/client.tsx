@@ -1,22 +1,26 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useTransition } from "react";
 import { AdmCard, Switch, Field } from "@/components/admin/ui";
 import { Icon } from "@/components/admin/AdminIcons";
+import { saveCommunityConfig } from "@/lib/actions/community-config";
+import type { CommunityConfig } from "@/lib/community-config";
 
 const GAME_LABELS: any = { memory: "Hafıza Eşleştirme", sequence: "Sıralı Dikkat", reaction: "Refleks" };
 
-const INITIAL_CONFIG = {
-  games: { memory: true, sequence: true, reaction: false },
-  dailyLimit: 3,
-  collections: [
-    { id: "k1", title: "Web Tasarım Trendleri", count: 12, base: 450, hue: 200 },
-    { id: "k2", title: "Minimalist UI", count: 8, base: 320, hue: 45 }
-  ]
-};
+export function CommunityClient({ initial }: { initial: CommunityConfig }) {
+  const [cfg, setCfg] = useState<CommunityConfig>(initial);
+  const [saved, setSaved] = useState(false);
+  const [pending, start] = useTransition();
 
-export function CommunityClient() {
-  const [cfg, setCfg] = useState(INITIAL_CONFIG);
+  const save = () =>
+    start(async () => {
+      const res = await saveCommunityConfig(cfg);
+      if (!res?.error) {
+        setSaved(true);
+        setTimeout(() => setSaved(false), 2000);
+      }
+    });
 
   const setGame = (id: string, on: boolean) => setCfg(c => ({ ...c, games: { ...c.games, [id]: on } }));
   const setColl = (id: string, patch: any) => setCfg(c => ({ ...c, collections: c.collections.map(col => col.id === id ? { ...col, ...patch } : col) }));
@@ -25,6 +29,13 @@ export function CommunityClient() {
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "2rem" }}>
+      <div className="ed-toolbar">
+        <span className="adm-badge adm-badge--green">Oyunlar & Topluluk</span>
+        <span className="sp" />
+        {saved && <span className="adm-badge adm-badge--green" style={{ marginRight: ".5rem" }}>Kaydedildi ✓</span>}
+        <button className="adm-btn adm-btn--primary" onClick={save} disabled={pending}>{pending ? "Kaydediliyor…" : "Kaydet"}</button>
+      </div>
+
       <AdmCard title="Zihin Oyunları" desc="Anasayfadaki etkileşimli oyunları yönet">
         <div style={{ display: "flex", flexDirection: "column", gap: "1rem", marginBottom: "2rem" }}>
           {Object.keys(GAME_LABELS).map(id => (

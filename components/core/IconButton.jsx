@@ -3,7 +3,7 @@ import React from "react";
 const CSS = `
 .mk-iconbtn{
   display:inline-flex; align-items:center; justify-content:center; cursor:pointer;
-  background:transparent; border:1px solid var(--border); border-radius:var(--radius-pill);
+  background:transparent; border:1px solid var(--border); border-radius:var(--radius-sm);
   color:var(--text); transition: color var(--dur-fast) var(--ease-out), background var(--dur-fast) var(--ease-out), border-color var(--dur-fast) var(--ease-out), transform var(--dur-fast) var(--ease-out);
   -webkit-tap-highlight-color:transparent;
 }

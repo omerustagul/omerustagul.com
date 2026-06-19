@@ -2,23 +2,24 @@
 
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
-import { DAILY_LIMIT } from "@/lib/games-config";
+import { getCommunityConfig } from "@/lib/community-config-server";
 
-/** Submit a game score (one row per play). Enforces a daily play limit. */
+/** Submit a game score (one row per play). Enforces the admin-set daily limit. */
 export async function submitScore(game: string, score: number) {
   const session = await auth();
   if (!session?.user?.id) return { error: "Giriş gerekli." as const };
   const userId = session.user.id;
+  const dailyLimit = (await getCommunityConfig()).dailyLimit;
 
   const since = new Date();
   since.setHours(0, 0, 0, 0);
   const todayCount = await prisma.gameScore.count({
     where: { userId, game, playedAt: { gte: since } },
   });
-  if (todayCount >= DAILY_LIMIT) return { error: "Günlük hakkın doldu." as const };
+  if (todayCount >= dailyLimit) return { error: "Günlük hakkın doldu." as const };
 
   await prisma.gameScore.create({ data: { userId, game, best: score } });
-  return { ok: true as const, remaining: DAILY_LIMIT - todayCount - 1 };
+  return { ok: true as const, remaining: dailyLimit - todayCount - 1 };
 }
 
 export type GameStat = { playedToday: boolean; best: number | null; avg: number | null };
@@ -29,6 +30,7 @@ export async function getMyGameStats(): Promise<Record<string, GameStat>> {
   const session = await auth();
   if (!session?.user?.id) return {};
   const userId = session.user.id;
+  const dailyLimit = (await getCommunityConfig()).dailyLimit;
 
   const since = new Date();
   since.setHours(0, 0, 0, 0);
@@ -41,7 +43,7 @@ export async function getMyGameStats(): Promise<Record<string, GameStat>> {
     let best: number | null = null;
     for (const r of all) if (best == null || (GAME_LOWER[game] ? r.best < best : r.best > best)) best = r.best;
     const avg = today.length ? Math.round(today.reduce((a, b) => a + b.best, 0) / today.length) : null;
-    out[game] = { playedToday: today.length >= DAILY_LIMIT, best, avg };
+    out[game] = { playedToday: today.length >= dailyLimit, best, avg };
   }
   return out;
 }

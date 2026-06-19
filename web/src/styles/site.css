@@ -1740,7 +1740,7 @@
   --_bg: var(--accent);
   --_fg: var(--on-accent);
   --_bd: transparent;
-  height: 38px;
+  height: 42px;
   position: relative;
   display: inline-flex;
   align-items: center;
@@ -1753,7 +1753,7 @@
   cursor: pointer;
   white-space: nowrap;
   border: 1px solid var(--_bd);
-  border-radius: clamp(2px, calc(var(--radius) * 4), 999px);
+  border-radius: var(--radius-sm);
   color: var(--_fg);
   background: transparent;
   padding: .7rem 1.25rem;

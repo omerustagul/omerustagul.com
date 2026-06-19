@@ -5,7 +5,7 @@ const CSS = `
   display:inline-flex; align-items:center; gap:.4em;
   font-family:var(--font-mono); font-size:var(--fs-label); font-weight:var(--fw-medium);
   letter-spacing:var(--ls-label); text-transform:uppercase; line-height:1;
-  padding:.4em .7em; border-radius:var(--radius-pill); white-space:nowrap;
+  padding:.4em .7em; border-radius:var(--radius-sm); white-space:nowrap;
 }
 .mk-badge--solid{ background:var(--accent); color:var(--on-accent); }
 .mk-badge--outline{ background:transparent; color:var(--text); border:1px solid var(--border-strong); }

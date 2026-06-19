@@ -8,7 +8,7 @@ const CSS = `
   position:relative; display:inline-flex; align-items:center; justify-content:center;
   gap:.55em; isolation:isolate; cursor:pointer; white-space:nowrap;
   font-family:var(--font-sans); font-weight:var(--fw-medium); letter-spacing:-0.01em;
-  border:1px solid var(--_bd); border-radius:var(--radius-pill);
+  border:1px solid var(--_bd); border-radius:var(--radius-sm);
   color:var(--_fg); background:transparent;
   transition: color var(--dur-fast) var(--ease-out), border-color var(--dur-fast) var(--ease-out), transform var(--dur-fast) var(--ease-out);
   -webkit-tap-highlight-color:transparent;

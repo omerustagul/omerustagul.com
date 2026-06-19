@@ -298,7 +298,7 @@ function tierMessage(rank: number, _total: number) {
   if (rank <= 8) return { emoji: "💪", title: "İyi gidiyorsun!", text: "İlk sekiztesin. Biraz daha pratikle üst sıralara rahatça çıkarsın." };
   return { emoji: "🌱", title: "Gelişim yolundasın", text: "Daha sık zihin egzersizi yap; düzenli oynayanlar kısa sürede fark atıyor." };
 }
-function GameResults({ gid, score, board, myRank, total, isGuest, onClose }: { gid: string; score: number | string; board: LeaderRow[]; myRank: number | null; total: number; isGuest: boolean; onClose: () => void }) {
+function GameResults({ gid, score, board, myRank, total, isGuest, dailyLimit = 1, onClose }: { gid: string; score: number | string; board: LeaderRow[]; myRank: number | null; total: number; isGuest: boolean; dailyLimit?: number; onClose: () => void }) {
   const g = gmeta(gid);
   const t = myRank ? tierMessage(myRank, total) : null;
   return (
@@ -325,14 +325,14 @@ function GameResults({ gid, score, board, myRank, total, isGuest, onClose }: { g
       </div>
       <div className="gres__cta">
         <button className="btn btn--primary" onClick={onClose}>Kapat <span className="arr">→</span></button>
-        <span className="gres__again">Günde 1 hak · yarın tekrar gel</span>
+        <span className="gres__again">Günde {dailyLimit} hak · yarın tekrar gel</span>
       </div>
     </div>
   );
 }
 
 /* ---------------- stage (slide-up popup) ---------------- */
-function GameStage({ gid, authed, playedToday, best, onClose }: { gid: string; authed: boolean; playedToday: boolean; best: number | null; onClose: () => void }) {
+function GameStage({ gid, authed, dailyLimit = 1, playedToday, best, onClose }: { gid: string; authed: boolean; dailyLimit?: number; playedToday: boolean; best: number | null; onClose: () => void }) {
   const [open, setOpen] = useState(false);
   const [phase, setPhase] = useState<"play" | "result">(playedToday ? "result" : "play");
   const [result, setResult] = useState<{ score: number | string; board: LeaderRow[]; myRank: number | null; total: number } | null>(
@@ -387,7 +387,7 @@ function GameStage({ gid, authed, playedToday, best, onClose }: { gid: string; a
           {phase === "play" && gid === "sequence" && <SequenceGame onFinish={finish} />}
           {phase === "play" && gid === "reaction" && <ReflexGame onFinish={finish} />}
           {phase === "result" && result && (
-            <GameResults gid={gid} score={result.score} board={result.board} myRank={result.myRank} total={result.total} isGuest={!authed} onClose={close} />
+            <GameResults gid={gid} score={result.score} board={result.board} myRank={result.myRank} total={result.total} isGuest={!authed} dailyLimit={dailyLimit} onClose={close} />
           )}
         </div>
       </div>
@@ -396,9 +396,21 @@ function GameStage({ gid, authed, playedToday, best, onClose }: { gid: string; a
 }
 
 /* ---------------- home section ---------------- */
-export function GamesSection({ authed = false, stats = {} }: { authed?: boolean; stats?: Record<string, GameStat> }) {
+export function GamesSection({
+  authed = false,
+  stats = {},
+  enabledGames,
+  dailyLimit = 1,
+}: {
+  authed?: boolean;
+  stats?: Record<string, GameStat>;
+  enabledGames?: Record<string, boolean>;
+  dailyLimit?: number;
+}) {
   const [active, setActive] = useState<string | null>(null);
   const statOf = (id: string): GameStat => stats[id] ?? { playedToday: false, best: null, avg: null };
+  const visibleGames = GAMES.filter((g) => enabledGames?.[g.id] !== false);
+  if (!visibleGames.length) return null;
   return (
     <section className="section wrap games" id="oyunlar">
       <header className="games__head reveal">
@@ -410,7 +422,7 @@ export function GamesSection({ authed = false, stats = {} }: { authed?: boolean;
         </p>
       </header>
       <div className="games__grid">
-        {GAMES.map((g, i) => {
+        {visibleGames.map((g, i) => {
           const st = statOf(g.id);
           const unit = g.unit === "ms" ? "ms" : "";
           return (
@@ -449,7 +461,7 @@ export function GamesSection({ authed = false, stats = {} }: { authed?: boolean;
         })}
       </div>
       {active && (
-        <GameStage gid={active} authed={authed} playedToday={statOf(active).playedToday} best={statOf(active).best} onClose={() => setActive(null)} />
+        <GameStage gid={active} authed={authed} dailyLimit={dailyLimit} playedToday={statOf(active).playedToday} best={statOf(active).best} onClose={() => setActive(null)} />
       )}
     </section>
   );

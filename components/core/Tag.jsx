@@ -5,7 +5,7 @@ const CSS = `
   display:inline-flex; align-items:center; cursor:pointer;
   font-family:var(--font-sans); font-size:var(--fs-sm); font-weight:var(--fw-medium);
   color:var(--text); background:var(--surface); border:1px solid var(--border);
-  padding:.45rem .85rem; border-radius:var(--radius-pill); white-space:nowrap;
+  padding:.45rem .85rem; border-radius:var(--radius-sm); white-space:nowrap;
   transition: color var(--dur-fast) var(--ease-out), background var(--dur-fast) var(--ease-out), border-color var(--dur-fast) var(--ease-out);
 }
 .mk-tag:hover{ border-color:var(--border-strong); }
