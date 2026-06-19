@@ -1,55 +1,41 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useTransition } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Ph } from "@/components/marka/parts";
+import { VoteButton } from "@/components/marka/VoteButton";
 import { SectionHead } from "@/components/marka/Sections";
+import { toggleFollow } from "@/lib/actions/follow";
 
-/* Faithful port of ui_kits/website/Community.jsx — Haftanın İşi (voting
-   ranking), Koleksiyonlar + Rozetler. Interactivity kept local. */
+/* Faithful port of ui_kits/website/Community.jsx — Haftanın İşi (live voting +
+   vote-driven ranking), Koleksiyonlar (DB-backed follow) + Rozetler (earned). */
 
-function VoteHeart({ id, base }: { id: string; base: number }) {
-  const [voted, setVoted] = useState(false);
-  return (
-    <button
-      type="button"
-      className={`vote vote--static ${voted ? "is-voted" : ""}`}
-      aria-pressed={voted}
-      aria-label="Vote"
-      onClick={(e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        setVoted((v) => !v);
-      }}
-    >
-      <svg width="14" height="14" viewBox="0 0 24 24" fill={voted ? "currentColor" : "none"} stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-        <path d="M12 21s-7.5-4.6-10-9.2C.4 8.5 2 5 5.5 5 7.7 5 9.2 6.3 12 9c2.8-2.7 4.3-4 6.5-4C22 5 23.6 8.5 22 11.8 19.5 16.4 12 21 12 21z" />
-      </svg>
-      <span className="vote__n">{base + (voted ? 1 : 0)}</span>
-    </button>
-  );
-}
+export type WeeklyItem = {
+  id: string;
+  title: string;
+  client: string;
+  cat: string;
+  hue: number;
+  votes: number;
+  voted: boolean;
+  slug: string;
+};
 
-const RANKED = [
-  { id: "atlas", title: "Atlas Finans yeniden markalaşma", client: "Atlas Bank · 2026", cat: "MARKA", hue: 20, votes: 312 },
-  { id: "nova", title: "Nova Spor Uygulaması", client: "Nova · 2026", cat: "UI/UX", hue: 0, votes: 248 },
-  { id: "venta", title: "Venta e-ticaret", client: "Venta · 2026", cat: "E-TİCARET", hue: -50, votes: 197 },
-  { id: "pera", title: "Pera Galeri kimliği", client: "Pera Sanat · 2025", cat: "MARKA", hue: 40, votes: 156 },
-];
-
-export function WeeklyWork() {
-  const top = RANKED[0];
-  const rest = RANKED.slice(1);
+export function WeeklyWork({ items, authed }: { items: WeeklyItem[]; authed: boolean }) {
+  if (!items.length) return null;
+  const top = items[0];
+  const rest = items.slice(1);
   return (
     <section className="section wrap weekly" aria-label="Haftanın işi">
       <SectionHead eyebrow="Topluluk" title="Haftanın İşi" sub="Topluluğun oylarıyla öne çıkan projeler. Sen de beğen, sıralamayı belirle." linkText="" />
       <div className="weekly__grid">
-        <Link className="weekly__hero reveal" href="/projects" data-cursor="Projeyi Gör">
+        <Link className="weekly__hero reveal" href={`/projects/${top.slug}`} data-cursor="Projeyi Gör">
           <div className="weekly__cover">
             <Ph ratio="16/10" tag="PROJE GÖRSELİ" hue={top.hue} />
             <span className="weekly__crown">🏆 Haftanın İşi</span>
             <span className="weekly__votes">
-              <VoteHeart id={top.id} base={top.votes} />
+              <VoteButton projectId={top.id} count={top.votes} voted={top.voted} authed={authed} />
             </span>
           </div>
           <div className="weekly__meta">
@@ -69,7 +55,7 @@ export function WeeklyWork() {
                 <h4>{r.title}</h4>
                 <span className="card__meta mono">{r.cat}</span>
               </div>
-              <VoteHeart id={r.id} base={r.votes} />
+              <VoteButton projectId={r.id} count={r.votes} voted={r.voted} authed={authed} />
             </li>
           ))}
         </ol>
@@ -128,8 +114,45 @@ const COLLECTIONS = [
   { id: "k4", title: "Hareket & Etkileşim", count: 12, hue: 200, base: 760 },
 ];
 
-function CollectionCard({ c }: { c: (typeof COLLECTIONS)[number] }) {
-  const [on, setOn] = useState(false);
+export type FollowState = { following: Record<string, boolean>; extra: Record<string, number> };
+
+function CollectionCard({
+  c,
+  authed,
+  initialFollowing,
+  initialExtra,
+}: {
+  c: (typeof COLLECTIONS)[number];
+  authed: boolean;
+  initialFollowing: boolean;
+  initialExtra: number;
+}) {
+  const router = useRouter();
+  const [on, setOn] = useState(initialFollowing);
+  const [extra, setExtra] = useState(initialExtra);
+  const [, start] = useTransition();
+
+  function toggle() {
+    if (!authed) {
+      router.push("/login?callbackUrl=/");
+      return;
+    }
+    const prevOn = on;
+    const prevExtra = extra;
+    setOn(!prevOn);
+    setExtra(prevExtra + (prevOn ? -1 : 1));
+    start(async () => {
+      const r = await toggleFollow(c.id);
+      if ("error" in r) {
+        setOn(prevOn);
+        setExtra(prevExtra);
+      } else {
+        setOn(r.following);
+        setExtra(r.count);
+      }
+    });
+  }
+
   return (
     <div className="collcard reveal">
       <div className="collcard__cover">
@@ -147,9 +170,9 @@ function CollectionCard({ c }: { c: (typeof COLLECTIONS)[number] }) {
                 </span>
               ))}
             </div>
-            <span className="collcard__followers">{(c.base + (on ? 1 : 0)).toLocaleString("tr-TR")} takipçi</span>
+            <span className="collcard__followers">{(c.base + extra).toLocaleString("tr-TR")} takipçi</span>
           </div>
-          <button className={`followbtn ${on ? "is-on" : ""}`} onClick={() => setOn((v) => !v)}>
+          <button type="button" className={`followbtn ${on ? "is-on" : ""}`} onClick={toggle}>
             {on ? "Takiptesin" : "Takip Et"}
           </button>
         </div>
@@ -158,14 +181,28 @@ function CollectionCard({ c }: { c: (typeof COLLECTIONS)[number] }) {
   );
 }
 
-export function Collections({ earnedIds = [] }: { earnedIds?: string[] }) {
+export function Collections({
+  earnedIds = [],
+  authed = false,
+  follows = { following: {}, extra: {} },
+}: {
+  earnedIds?: string[];
+  authed?: boolean;
+  follows?: FollowState;
+}) {
   return (
     <section className="section wrap collections" aria-label="Koleksiyonlar">
       <SectionHead eyebrow="İlham" title="Koleksiyonlar" sub="Küratörlü proje koleksiyonlarını takip et, ilham akışını kişiselleştir." linkText="Tümünü Gör" linkHref="/blog" />
       <Badges earnedIds={earnedIds} />
       <div className="grid-4 collections__grid">
         {COLLECTIONS.map((c) => (
-          <CollectionCard key={c.id} c={c} />
+          <CollectionCard
+            key={c.id}
+            c={c}
+            authed={authed}
+            initialFollowing={!!follows.following[c.id]}
+            initialExtra={follows.extra[c.id] ?? 0}
+          />
         ))}
       </div>
     </section>

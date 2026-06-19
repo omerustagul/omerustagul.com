@@ -43,7 +43,7 @@ export function SectionHead({
   );
 }
 
-type Work = { title: string; client?: string; category?: string; hue?: number; href: string; votes?: number };
+type Work = { id?: string; title: string; client?: string; category?: string; hue?: number; href: string; votes?: number; voted?: boolean; authed?: boolean };
 
 export function LatestWorks({ works }: { works: Work[] }) {
   return (

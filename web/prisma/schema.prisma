@@ -33,6 +33,7 @@ model User {
   gameScores   GameScore[]
   votes        ProjectVote[]
   reviews      Review[]
+  follows      Follow[]
 }
 
 // ------------------------------------------------------------------ academy
@@ -144,6 +145,18 @@ model ProjectVote {
   project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
 
   @@unique([projectId, userId])
+}
+
+// Following a homepage collection (collectionId is the prototype's string id, no FK).
+model Follow {
+  id           String   @id @default(cuid())
+  userId       String
+  collectionId String
+  createdAt    DateTime @default(now())
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, collectionId])
+  @@index([collectionId])
 }
 
 // ------------------------------------------------------ portfolio & content

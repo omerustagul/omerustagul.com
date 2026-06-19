@@ -1,4 +1,5 @@
 import { auth } from "@/auth";
+import { prisma } from "@/lib/prisma";
 import { Hero } from "@/components/marka/Hero";
 import { LatestWorks, Partners, Academy, Blog, Market, Stats, CTABlocks } from "@/components/marka/Sections";
 import { Services } from "@/components/marka/Services";
@@ -9,12 +10,6 @@ export const dynamic = "force-dynamic";
 
 // Homepage — faithful 1:1 reproduction of the prototype (ui_kits/website), with
 // the exact section content and order from the Claude-designed prototype.
-
-const WORKS = [
-  { title: "Nova Spor Uygulaması", client: "Nova · 2026", category: "UI/UX", hue: 0, href: "/projects", votes: 248 },
-  { title: "Pera Galeri kimliği", client: "Pera Sanat · 2025", category: "MARKA", hue: 40, href: "/projects", votes: 156 },
-  { title: "Venta e-ticaret", client: "Venta · 2026", category: "E-TİCARET", hue: -50, href: "/projects", votes: 197 },
-];
 
 const PARTNERS = ["ATLAS", "NOVA", "KÖK", "VENTA", "ORBİT", "FORM", "PERA", "LUMA"];
 
@@ -49,18 +44,75 @@ const PRODUCTS = [
 
 export default async function Home() {
   const session = await auth();
-  const earnedIds = session?.user ? ["uye"] : [];
+  const userId = session?.user?.id ?? null;
+  const authed = !!session?.user;
+
+  // Real projects + live vote counts + the caller's vote state.
+  const projects = await prisma.project.findMany({
+    orderBy: { order: "asc" },
+    include: { _count: { select: { votes: true } } },
+  });
+  const myVotes = userId
+    ? new Set((await prisma.projectVote.findMany({ where: { userId }, select: { projectId: true } })).map((v) => v.projectId))
+    : new Set<string>();
+
+  const mapped = projects.map((p, i) => ({
+    id: p.id,
+    title: p.title,
+    client: p.client ?? "",
+    category: p.category ?? "WEB",
+    slug: p.slug,
+    hue: (i * 40) % 360,
+    votes: p._count.votes,
+    voted: myVotes.has(p.id),
+  }));
+
+  const works = mapped.slice(0, 3).map((w) => ({
+    id: w.id, title: w.title, client: w.client, category: w.category,
+    hue: w.hue, href: `/projects/${w.slug}`, votes: w.votes, voted: w.voted, authed,
+  }));
+  const weekly = [...mapped]
+    .sort((a, b) => b.votes - a.votes)
+    .slice(0, 4)
+    .map((w) => ({ id: w.id, title: w.title, client: w.client, cat: w.category, hue: w.hue, votes: w.votes, voted: w.voted, slug: w.slug }));
+
+  // Collection follow state (DB-backed) + per-collection follower counts.
+  const myFollowRows = userId ? await prisma.follow.findMany({ where: { userId }, select: { collectionId: true } }) : [];
+  const followingSet = new Set(myFollowRows.map((f) => f.collectionId));
+  const followGroups = await prisma.follow.groupBy({ by: ["collectionId"], _count: { _all: true } });
+  const following: Record<string, boolean> = {};
+  const extra: Record<string, number> = {};
+  for (const id of ["k1", "k2", "k3", "k4"]) following[id] = followingSet.has(id);
+  for (const g of followGroups) extra[g.collectionId] = g._count._all;
+  const follows = { following, extra };
+
+  // Earned badges from real user activity.
+  const earnedIds: string[] = [];
+  if (userId) {
+    earnedIds.push("uye");
+    if (myVotes.size > 0) earnedIds.push("oy");
+    if ((await prisma.gameScore.count({ where: { userId } })) > 0) earnedIds.push("oyuncu");
+    if (followingSet.size > 0) earnedIds.push("koleksiyon");
+    const champGames: [string, "asc" | "desc"][] = [["memory", "desc"], ["sequence", "desc"], ["reaction", "asc"]];
+    for (const [game, dir] of champGames) {
+      const top = await prisma.gameScore.findFirst({ where: { game }, orderBy: { best: dir }, select: { userId: true } });
+      if (top && top.userId === userId) {
+        earnedIds.push("sampiyon");
+        break;
+      }
+    }
+  }
 
   return (
     <main>
       <Hero lines={["Atlas Finans", "yeniden", "markalaşma"]} client="Atlas Bank" service="Marka · Web · Ürün" score="9.2" href="/projects" />
-      <LatestWorks works={WORKS} />
-      <WeeklyWork />
+      <LatestWorks works={works} />
+      <WeeklyWork items={weekly} authed={authed} />
       <Partners names={PARTNERS} />
       <Services />
       <Academy courses={COURSES} />
-      <Collections earnedIds={earnedIds} />
-      <GamesSection authed={!!session?.user} />
+      <Collections earnedIds={earnedIds} authed={authed} follows={follows} />
+      <GamesSection authed={authed} />
       <Blog featured={BLOG_FEATURED} rest={BLOG_REST} />
       <Market products={PRODUCTS} />
       <Stats />

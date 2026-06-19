@@ -1,5 +1,6 @@
 import type { CSSProperties, ReactNode } from "react";
 import Link from "next/link";
+import { VoteButton } from "@/components/marka/VoteButton";
 
 /* Faithful port of the prototype's website primitives (ui_kits/website/parts.jsx),
    using the prototype's site.css classes (.ph, .btn, .badge, .card, ...). */
@@ -90,6 +91,7 @@ function VoteBadge({ count }: { count: number }) {
 }
 
 export function ProjectCard({
+  id,
   title,
   client,
   category = "WEB",
@@ -97,7 +99,10 @@ export function ProjectCard({
   hue,
   href = "#",
   votes = 0,
+  voted = false,
+  authed = false,
 }: {
+  id?: string;
   title: string;
   client?: string;
   category?: string;
@@ -105,13 +110,15 @@ export function ProjectCard({
   hue?: number;
   href?: string;
   votes?: number;
+  voted?: boolean;
+  authed?: boolean;
 }) {
   return (
     <Link className="card reveal" href={href} data-cursor="Projeyi Gör">
       <div style={{ position: "relative" }}>
         <Ph ratio="4/3" tag="PROJE GÖRSELİ" hue={hue} />
         <span className="cardlabel">Projeyi Gör →</span>
-        <VoteBadge count={votes} />
+        {id ? <VoteButton projectId={id} count={votes} voted={voted} authed={authed} /> : <VoteBadge count={votes} />}
       </div>
       <div className="card__top">
         <Badge>{tag}</Badge>
