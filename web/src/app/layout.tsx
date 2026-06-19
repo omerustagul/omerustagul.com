@@ -3,6 +3,8 @@ import Script from "next/script";
 import "./globals.css";
 import { ThemeProvider } from "@/components/theme/ThemeProvider";
 import { SITE_DESC, SITE_NAME, SITE_URL } from "@/lib/site";
+import { getLocale } from "@/lib/i18n-server";
+import { langMeta } from "@/lib/i18n";
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
@@ -18,15 +20,17 @@ export const metadata: Metadata = {
   twitter: { card: "summary_large_image", title: SITE_NAME, description: SITE_DESC },
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
   // data-theme is read by the Marka token system. Fonts/resets come from
   // globals.css → src/styles/marka.css, not next/font.
+  const locale = await getLocale();
+  const meta = langMeta(locale);
   return (
-    <html lang="tr" data-theme="light" suppressHydrationWarning>
+    <html lang={locale} dir={meta.rtl ? "rtl" : "ltr"} data-theme="light" suppressHydrationWarning>
       <body>
         {/* Apply the saved theme before first paint (no flash). Static asset
             in /public — render-blocking, runs before hydration. */}

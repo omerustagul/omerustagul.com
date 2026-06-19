@@ -14,7 +14,7 @@ export default async function SiteLayout({ children }: { children: React.ReactNo
     <div className="mk-site">
       <MarkaHeader locale={locale} userName={session?.user?.name ?? null} />
       {children}
-      <MarkaFooter />
+      <MarkaFooter locale={locale} />
       <Motion />
     </div>
   );
