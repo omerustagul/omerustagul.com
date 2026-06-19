@@ -18,7 +18,8 @@ export async function createLead(_prev: State | undefined, formData: FormData): 
   if (!name || !email) return { error: "Ad ve e-posta gerekli." };
   if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return { error: "Geçerli bir e-posta girin." };
 
-  const full = budget ? `Bütçe: ${budget}\n\n${message}` : message;
-  await prisma.lead.create({ data: { name, email, message: full || null } });
+  await prisma.lead.create({
+    data: { name, email, message: message || null, budget: budget || null, source: "Web sitesi", status: "Yeni" },
+  });
   return { ok: true };
 }

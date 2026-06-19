@@ -177,6 +177,26 @@ export async function deleteLead(fd: FormData) {
   revalidatePath("/admin/leads");
 }
 
+// object-arg variants for the Kanban board (drag-drop + drawer)
+export async function moveLeadStage(id: string, status: string) {
+  await requireAdmin();
+  await prisma.lead.update({ where: { id }, data: { status } });
+  revalidatePath("/admin/leads");
+}
+export async function updateLeadFields(
+  id: string,
+  patch: { status?: string; priority?: string | null; budget?: string | null; notes?: string | null },
+) {
+  await requireAdmin();
+  await prisma.lead.update({ where: { id }, data: patch });
+  revalidatePath("/admin/leads");
+}
+export async function removeLead(id: string) {
+  await requireAdmin();
+  await prisma.lead.delete({ where: { id } });
+  revalidatePath("/admin/leads");
+}
+
 /* --------------------------------------------------------------- bookings */
 export async function setBookingStatus(fd: FormData) {
   await requireAdmin();

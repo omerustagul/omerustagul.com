@@ -220,7 +220,11 @@ model Lead {
   name      String
   email     String
   message   String?
-  status    String   @default("new")
+  status    String   @default("Yeni")
+  priority  String?
+  budget    String?
+  source    String?
+  notes     String?
   createdAt DateTime @default(now())
 }
 
