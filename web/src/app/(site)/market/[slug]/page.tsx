@@ -38,8 +38,10 @@ export default async function ProductDetail({ params }: { params: Promise<{ slug
 
   const avg = product.reviews.length ? product.reviews.reduce((s, r) => s + r.rating, 0) / product.reviews.length : 0;
   const includes = ["Kaynak dosyalar", "Dokümantasyon", "Ömür boyu güncelleme", "Ticari lisans"];
+  const seller = product.seller ?? "Marka Studio";
+  const format = product.format ?? "Figma";
   const specs: [string, string][] = [
-    ["Format", "Figma + React"],
+    ["Format", format],
     ["Sürüm", "1.0"],
     ["Lisans", "Ticari"],
   ];

@@ -2127,7 +2127,7 @@
   display: inline-flex;
   gap: 2px;
   background: var(--surface-muted);
-  padding: 3px;
+  padding: 6px 15px;
   border-radius: var(--radius-sm);
   margin-bottom: var(--space-5);
 }
@@ -2138,8 +2138,6 @@
   font-family: var(--font-sans);
   font-size: var(--fs-sm);
   color: var(--text-muted);
-  padding: .5rem 1.1rem;
-  border-radius: var(--radius-sm);
   cursor: pointer;
   white-space: nowrap;
 }

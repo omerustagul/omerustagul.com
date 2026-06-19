@@ -13,9 +13,9 @@ export default async function MarketPage() {
   const products = await prisma.product.findMany({ orderBy: { createdAt: "desc" } });
   const items = products.map((p, i) => ({
     title: p.title,
-    seller: "Marka Studio",
-    format: FORMATS[i % FORMATS.length],
-    type: TYPES[i % TYPES.length],
+    seller: p.seller ?? "Marka Studio",
+    format: p.format ?? FORMATS[i % FORMATS.length],
+    type: p.type ?? TYPES[i % TYPES.length],
     price: formatUSD(p.price),
     slug: p.slug,
     hue: i * 32,

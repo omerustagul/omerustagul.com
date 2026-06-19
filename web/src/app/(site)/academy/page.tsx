@@ -13,12 +13,12 @@ export default async function AcademyPage() {
   const courses = await prisma.course.findMany({ orderBy: { createdAt: "desc" } });
   const items = courses.map((c, i) => ({
     title: c.title,
-    instructor: "Marka Akademi",
+    instructor: c.instructor ?? "Marka Akademi",
     rating: 4.7 + ((i % 3) * 0.1),
     students: 96 + i * 26,
     price: formatTRY(c.price),
-    level: LEVELS[i % LEVELS.length],
-    topic: TOPICS[i % TOPICS.length],
+    level: c.level ?? LEVELS[i % LEVELS.length],
+    topic: c.topic ?? TOPICS[i % TOPICS.length],
     slug: c.slug,
     hue: i * 22,
   }));

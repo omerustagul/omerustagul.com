@@ -1271,7 +1271,7 @@
   font-size: var(--fs-xs);
   padding: .4rem .8rem;
   border: 1px solid var(--border);
-  border-radius: var(--radius-pill);
+  border-radius: var(--radius-sm);
   color: var(--text-muted);
 }
 
@@ -1333,7 +1333,7 @@
   font-size: var(--fs-sm);
   padding: .5rem .9rem;
   border: 1px solid var(--border);
-  border-radius: var(--radius-pill);
+  border-radius: var(--radius-sm);
   transition: border-color var(--dur-fast), color var(--dur-fast);
 }
 
@@ -1449,7 +1449,7 @@
   color: var(--accent-hover);
   background: var(--accent-tint);
   padding: 2px 8px;
-  border-radius: var(--radius-pill);
+  border-radius: var(--radius-sm);
 }
 
 .cv-ventures .cv-venture {

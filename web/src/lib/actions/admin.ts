@@ -95,7 +95,14 @@ export async function saveProduct(fd: FormData) {
   await requireAdmin();
   const id = str(fd, "id");
   const title = str(fd, "title");
-  const data = { title, slug: str(fd, "slug") || slugify(title), price: num(fd, "price") };
+  const data = {
+    title,
+    slug: str(fd, "slug") || slugify(title),
+    price: num(fd, "price"),
+    type: str(fd, "type") || null,
+    format: str(fd, "format") || null,
+    seller: str(fd, "seller") || null,
+  };
   if (id) await prisma.product.update({ where: { id }, data });
   else await prisma.product.create({ data });
   refreshSite(["/market", "/admin/products"]);
@@ -112,7 +119,14 @@ export async function saveCourse(fd: FormData) {
   await requireAdmin();
   const id = str(fd, "id");
   const title = str(fd, "title");
-  const data = { title, slug: str(fd, "slug") || slugify(title), price: num(fd, "price") };
+  const data = {
+    title,
+    slug: str(fd, "slug") || slugify(title),
+    price: num(fd, "price"),
+    level: str(fd, "level") || null,
+    topic: str(fd, "topic") || null,
+    instructor: str(fd, "instructor") || null,
+  };
   if (id) await prisma.course.update({ where: { id }, data });
   else await prisma.course.create({ data });
   refreshSite(["/academy", "/admin/courses"]);

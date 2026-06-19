@@ -42,7 +42,7 @@ export default function LoginPage() {
             gap: "2px",
             padding: "3px",
             background: "var(--surface-muted)",
-            borderRadius: "var(--radius-pill)",
+            borderRadius: "var(--radius-sm)",
             marginBottom: "1.5rem",
           }}
         >
@@ -52,7 +52,7 @@ export default function LoginPage() {
               padding: ".55rem",
               border: 0,
               background: "var(--bg)",
-              borderRadius: "var(--radius-pill)",
+              borderRadius: "var(--radius-sm)",
               fontFamily: "inherit",
               fontSize: "var(--fs-sm)",
               fontWeight: 500,
@@ -137,7 +137,7 @@ export default function LoginPage() {
           >
             {pending ? "Giriş yapılıyor…" : "Giriş yap"}
           </button>
-          
+
           <p style={{ fontSize: "var(--fs-xs)", color: "var(--text-muted)", textAlign: "center", margin: ".5rem 0 0" }}>
             Demo için e-posta: <b>admin@marka.test</b>, şifre: <b>admin1234</b>
           </p>
