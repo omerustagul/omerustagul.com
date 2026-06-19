@@ -41,6 +41,21 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     return () => window.removeEventListener("storage", onStorage);
   }, []);
 
+  // live preview: the admin Appearance iframe posts theme changes instantly
+  // (no reliance on storage-event timing). Preview-only — does not persist.
+  useEffect(() => {
+    function onMessage(e: MessageEvent) {
+      if (e.origin !== window.location.origin) return;
+      if (e.data?.type === "mk-theme-preview" && e.data.theme) {
+        const t = e.data.theme as ThemeConfig;
+        setTheme(t);
+        applyTheme(t);
+      }
+    }
+    window.addEventListener("message", onMessage);
+    return () => window.removeEventListener("message", onMessage);
+  }, []);
+
   const set = useCallback((patch: Partial<ThemeConfig>) => {
     setTheme((prev) => {
       const next = { ...prev, ...patch };

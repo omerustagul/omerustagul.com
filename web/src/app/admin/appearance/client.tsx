@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useRef } from "react";
+import React, { useEffect, useRef } from "react";
 import { AdmCard, Field, Switch, Seg, ImageUpload } from "@/components/admin/ui";
 import { Icon } from "@/components/admin/AdminIcons";
 import { useTheme } from "@/components/theme/ThemeProvider";
@@ -42,6 +42,10 @@ function MiniHeader({ id }: { id: string }) {
 export function AppearanceClient() {
   const { theme: cfg, set: update, reset } = useTheme();
   const previewRef = useRef<HTMLIFrameElement>(null);
+
+  // Push every theme change into the preview iframe instantly (live sync).
+  const pushPreview = () => previewRef.current?.contentWindow?.postMessage({ type: "mk-theme-preview", theme: cfg }, window.location.origin);
+  useEffect(pushPreview, [cfg]);
 
   return (
     <div className="adm-grid adm-grid--2" style={{ alignItems: "start", gridTemplateColumns: "1fr 1fr", gap: "2rem", display: "grid" }}>
@@ -282,7 +286,7 @@ export function AppearanceClient() {
                 ⟳
               </button>
             </div>
-            <iframe ref={previewRef} src="/" title="Önizleme" style={{ width: "100%", height: "600px", border: 0, display: "block", background: "#fff" }} />
+            <iframe ref={previewRef} src="/" title="Önizleme" onLoad={pushPreview} style={{ width: "100%", height: "600px", border: 0, display: "block", background: "#fff" }} />
           </div>
         </AdmCard>
       </div>
