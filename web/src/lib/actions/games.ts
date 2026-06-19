@@ -21,6 +21,31 @@ export async function submitScore(game: string, score: number) {
   return { ok: true as const, remaining: DAILY_LIMIT - todayCount - 1 };
 }
 
+export type GameStat = { playedToday: boolean; best: number | null; avg: number | null };
+const GAME_LOWER: Record<string, boolean> = { memory: false, sequence: false, reaction: true };
+
+/** Per-game stats for the current user: played-today, all-time best, today's avg. */
+export async function getMyGameStats(): Promise<Record<string, GameStat>> {
+  const session = await auth();
+  if (!session?.user?.id) return {};
+  const userId = session.user.id;
+
+  const since = new Date();
+  since.setHours(0, 0, 0, 0);
+  const rows = await prisma.gameScore.findMany({ where: { userId }, select: { game: true, best: true, playedAt: true } });
+
+  const out: Record<string, GameStat> = {};
+  for (const game of Object.keys(GAME_LOWER)) {
+    const all = rows.filter((r) => r.game === game);
+    const today = all.filter((r) => r.playedAt >= since);
+    let best: number | null = null;
+    for (const r of all) if (best == null || (GAME_LOWER[game] ? r.best < best : r.best > best)) best = r.best;
+    const avg = today.length ? Math.round(today.reduce((a, b) => a + b.best, 0) / today.length) : null;
+    out[game] = { playedToday: today.length >= DAILY_LIMIT, best, avg };
+  }
+  return out;
+}
+
 export type LeaderRow = { name: string; best: number; isMe: boolean };
 
 /** Best-score-per-user leaderboard for a game (+ the caller's rank). */

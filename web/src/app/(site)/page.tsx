@@ -5,6 +5,7 @@ import { LatestWorks, Partners, Academy, Blog, Market, Stats, CTABlocks } from "
 import { Services } from "@/components/marka/Services";
 import { WeeklyWork, Collections } from "@/components/marka/community";
 import { GamesSection } from "@/components/marka/games-section";
+import { getMyGameStats } from "@/lib/actions/games";
 
 export const dynamic = "force-dynamic";
 
@@ -103,6 +104,8 @@ export default async function Home() {
     }
   }
 
+  const gameStats = authed ? await getMyGameStats() : {};
+
   return (
     <main>
       <Hero lines={["Atlas Finans", "yeniden", "markalaşma"]} client="Atlas Bank" service="Marka · Web · Ürün" score="9.2" href="/projects" />
@@ -112,7 +115,7 @@ export default async function Home() {
       <Services />
       <Academy courses={COURSES} />
       <Collections earnedIds={earnedIds} authed={authed} follows={follows} />
-      <GamesSection authed={authed} />
+      <GamesSection authed={authed} stats={gameStats} />
       <Blog featured={BLOG_FEATURED} rest={BLOG_REST} />
       <Market products={PRODUCTS} />
       <Stats />

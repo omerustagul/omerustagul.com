@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState, useTransition } from "react";
 import Link from "next/link";
-import { getLeaderboard, submitScore, type LeaderRow } from "@/lib/actions/games";
+import { getLeaderboard, submitScore, type GameStat, type LeaderRow } from "@/lib/actions/games";
 
 /* Faithful port of ui_kits/website/Games.jsx — homepage "Zihin Oyunları"
    section + slide-up game stage popup (memory · sequence · reflex) with a
@@ -332,20 +332,30 @@ function GameResults({ gid, score, board, myRank, total, isGuest, onClose }: { g
 }
 
 /* ---------------- stage (slide-up popup) ---------------- */
-function GameStage({ gid, authed, onClose }: { gid: string; authed: boolean; onClose: () => void }) {
+function GameStage({ gid, authed, playedToday, best, onClose }: { gid: string; authed: boolean; playedToday: boolean; best: number | null; onClose: () => void }) {
   const [open, setOpen] = useState(false);
-  const [phase, setPhase] = useState<"play" | "result">("play");
-  const [result, setResult] = useState<{ score: number; board: LeaderRow[]; myRank: number | null; total: number } | null>(null);
+  const [phase, setPhase] = useState<"play" | "result">(playedToday ? "result" : "play");
+  const [result, setResult] = useState<{ score: number | string; board: LeaderRow[]; myRank: number | null; total: number } | null>(
+    playedToday ? { score: best ?? "—", board: [], myRank: null, total: 0 } : null,
+  );
   const [, start] = useTransition();
   const g = gmeta(gid);
 
   useEffect(() => {
     const t = setTimeout(() => setOpen(true), 30);
     document.body.style.overflow = "hidden";
+    // already played today → open straight to the leaderboard (no replay)
+    if (playedToday) {
+      start(async () => {
+        const lb = await getLeaderboard(gid, g.lower);
+        setResult({ score: best ?? "—", board: lb.board, myRank: lb.myRank, total: lb.total });
+      });
+    }
     return () => {
       document.body.style.overflow = "";
       clearTimeout(t);
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const close = () => {
@@ -386,8 +396,9 @@ function GameStage({ gid, authed, onClose }: { gid: string; authed: boolean; onC
 }
 
 /* ---------------- home section ---------------- */
-export function GamesSection({ authed = false }: { authed?: boolean }) {
+export function GamesSection({ authed = false, stats = {} }: { authed?: boolean; stats?: Record<string, GameStat> }) {
   const [active, setActive] = useState<string | null>(null);
+  const statOf = (id: string): GameStat => stats[id] ?? { playedToday: false, best: null, avg: null };
   return (
     <section className="section wrap games" id="oyunlar">
       <header className="games__head reveal">
@@ -399,21 +410,47 @@ export function GamesSection({ authed = false }: { authed?: boolean }) {
         </p>
       </header>
       <div className="games__grid">
-        {GAMES.map((g, i) => (
-          <button key={g.id} className="gcard reveal" style={{ transitionDelay: `${i * 80}ms` }} onClick={() => setActive(g.id)} data-cursor="Oyna">
-            <GameArt id={g.id} />
-            <div className="gcard__b">
-              <span className="gcard__tag">{g.tag}</span>
-              <h3 className="gcard__name">{g.name}</h3>
-              <p className="gcard__desc">{g.desc}</p>
-              <div className="gcard__foot">
-                <span className="gcard__status">Bugün oynanabilir</span>
+        {GAMES.map((g, i) => {
+          const st = statOf(g.id);
+          const unit = g.unit === "ms" ? "ms" : "";
+          return (
+            <button
+              key={g.id}
+              className="gcard reveal"
+              style={{ transitionDelay: `${i * 80}ms` }}
+              onClick={() => setActive(g.id)}
+              data-cursor={st.playedToday ? "Sıralama" : "Oyna"}
+            >
+              <GameArt id={g.id} />
+              <div className="gcard__b">
+                <span className="gcard__tag">{g.tag}</span>
+                <h3 className="gcard__name">{g.name}</h3>
+                <p className="gcard__desc">{g.desc}</p>
+                <div className="gcard__foot">
+                  <span className={`gcard__status ${st.playedToday ? "is-done" : ""}`}>
+                    {st.playedToday ? "Bugün oynandı" : "Bugün oynanabilir"}
+                  </span>
+                  <div className="gcard__stats">
+                    {st.avg != null && (
+                      <span className="gcard__avg">
+                        Gün ort. <b>{st.avg}{unit}</b>
+                      </span>
+                    )}
+                    {st.best != null && (
+                      <span className="gcard__best">
+                        En iyi <b>{st.best}{unit}</b>
+                      </span>
+                    )}
+                  </div>
+                </div>
               </div>
-            </div>
-          </button>
-        ))}
+            </button>
+          );
+        })}
       </div>
-      {active && <GameStage gid={active} authed={authed} onClose={() => setActive(null)} />}
+      {active && (
+        <GameStage gid={active} authed={authed} playedToday={statOf(active).playedToday} best={statOf(active).best} onClose={() => setActive(null)} />
+      )}
     </section>
   );
 }
