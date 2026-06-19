@@ -23,3 +23,17 @@ export async function createBooking(_prev: State | undefined, formData: FormData
   revalidatePath("/admin/bookings");
   return { ok: true };
 }
+
+/** Slots already booked for a given YYYY-MM-DD (so the modal can disable them). */
+export async function getTakenSlots(date: string): Promise<string[]> {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) return [];
+  const start = new Date(`${date}T00:00:00`);
+  const end = new Date(`${date}T23:59:59.999`);
+  if (Number.isNaN(start.getTime())) return [];
+  const rows = await prisma.booking.findMany({
+    where: { slot: { gte: start, lte: end } },
+    select: { slot: true },
+  });
+  const hhmm = (d: Date) => `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
+  return rows.map((r) => hhmm(r.slot));
+}

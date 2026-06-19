@@ -3,6 +3,7 @@ import { getLocale } from "@/lib/i18n-server";
 import { MarkaHeader } from "@/components/marka/MarkaHeader";
 import { MarkaFooter } from "@/components/marka/MarkaFooter";
 import { Motion } from "@/components/marka/Motion";
+import { EntryPopup } from "@/components/marka/EntryPopup";
 
 export const dynamic = "force-dynamic";
 
@@ -16,6 +17,7 @@ export default async function SiteLayout({ children }: { children: React.ReactNo
       {children}
       <MarkaFooter locale={locale} />
       <Motion />
+      <EntryPopup />
     </div>
   );
 }

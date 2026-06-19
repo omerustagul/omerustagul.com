@@ -1,17 +1,18 @@
 "use client";
 
 import { useEffect, useMemo, useState, useTransition } from "react";
-import { createBooking } from "@/lib/actions/bookings";
+import { createBooking, getTakenSlots } from "@/lib/actions/bookings";
 
 /* Faithful port of the prototype's booking modal (theme/site-chrome.js).
-   Wired to the createBooking server action. */
-const SLOTS = ["10:00", "11:00", "12:00", "14:00", "15:00", "16:00", "17:00"];
+   Wired to the createBooking server action; taken slots are disabled. */
+const SLOTS = ["10:00", "11:00", "13:00", "14:00", "15:00", "16:00", "17:00"];
 const TOPICS = ["Marka & ürün", "Web tasarım", "Geliştirme", "Akademi / eğitim", "Diğer"];
 
 export function BookingModal({ onClose }: { onClose: () => void }) {
   const minDate = useMemo(() => new Date().toISOString().slice(0, 10), []);
   const [date, setDate] = useState("");
   const [slot, setSlot] = useState<string | null>(null);
+  const [taken, setTaken] = useState<string[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [done, setDone] = useState<{ date: string; slot: string } | null>(null);
   const [pending, start] = useTransition();
@@ -25,6 +26,18 @@ export function BookingModal({ onClose }: { onClose: () => void }) {
       document.body.style.overflow = "";
     };
   }, []);
+
+  // Disable slots already booked for the chosen date.
+  useEffect(() => {
+    if (!date) return;
+    let live = true;
+    getTakenSlots(date).then((t) => {
+      if (live) setTaken(t);
+    });
+    return () => {
+      live = false;
+    };
+  }, [date]);
 
   function submit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -94,14 +107,31 @@ export function BookingModal({ onClose }: { onClose: () => void }) {
             </label>
             <label>
               Tarih
-              <input type="date" value={date} min={minDate} onChange={(e) => setDate(e.target.value)} />
+              <input
+                type="date"
+                value={date}
+                min={minDate}
+                onChange={(e) => {
+                  setDate(e.target.value);
+                  setSlot(null);
+                }}
+              />
             </label>
             <div className="bookm__slots">
-              {SLOTS.map((s) => (
-                <button key={s} type="button" className={`bookm__slot ${slot === s ? "on" : ""}`} onClick={() => setSlot(s)}>
-                  {s}
-                </button>
-              ))}
+              {SLOTS.map((s) => {
+                const isTaken = taken.includes(s);
+                return (
+                  <button
+                    key={s}
+                    type="button"
+                    disabled={isTaken}
+                    className={`bookm__slot ${slot === s ? "on" : ""}`}
+                    onClick={() => setSlot(s)}
+                  >
+                    {s}
+                  </button>
+                );
+              })}
             </div>
             {error && <p className="authm__err">{error}</p>}
             <button className="btn btn--primary" type="submit" disabled={pending}>

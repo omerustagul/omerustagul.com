@@ -1,7 +1,11 @@
-import { Btn } from "@/components/marka/parts";
+"use client";
 
-/* Faithful port of ui_kits/website/Hero.jsx — featured-work editorial hero
-   with per-line mask-reveal headline. */
+import { Btn } from "@/components/marka/parts";
+import { useTheme } from "@/components/theme/ThemeProvider";
+
+/* Faithful port of ui_kits/website/Hero.jsx — featured-work editorial hero with
+   per-line mask-reveal headline. Variant (full/split/center) is driven by
+   MarkaTheme.heroVariant; a discreet HeroSwitch lets you explore the three. */
 
 function MaskTitle({ lines }: { lines: string[] }) {
   return (
@@ -12,6 +16,27 @@ function MaskTitle({ lines }: { lines: string[] }) {
         </span>
       ))}
     </h1>
+  );
+}
+
+const VARIANTS: [string, string][] = [
+  ["full", "Tam"],
+  ["split", "Bölünmüş"],
+  ["center", "Merkez"],
+];
+
+function HeroSwitch() {
+  const { theme, set } = useTheme();
+  const variant = theme.heroVariant || "full";
+  return (
+    <div className="heroswitch" role="group" aria-label="Hero varyantı">
+      <span>Hero</span>
+      {VARIANTS.map(([v, label]) => (
+        <button key={v} className={variant === v ? "on" : ""} onClick={() => set({ heroVariant: v })}>
+          {label}
+        </button>
+      ))}
+    </div>
   );
 }
 
@@ -28,36 +53,42 @@ export function Hero({
   score?: string;
   href?: string;
 }) {
+  const { theme } = useTheme();
+  const variant = theme.heroVariant || "full";
+
   return (
-    <section className="hero" data-variant="full" aria-label="Öne çıkan iş">
-      <div className="hero__media" data-parallax>
-        <div className="ph__in" />
-      </div>
-      <div className="hero__scrim" />
-      <div className="wrap hero__inner">
-        <div className="hero__top">
-          <span className="eyebrow">Öne Çıkan İş — Haziran 2026</span>
-          <span className="hero__score">
-            Awwwards skoru <b>{score}</b> / 10
-          </span>
+    <>
+      <section className="hero" data-variant={variant} aria-label="Öne çıkan iş">
+        <div className="hero__media" data-parallax>
+          <div className="ph__in" />
         </div>
-
-        <MaskTitle lines={lines} />
-
-        <div className="hero__bottom">
-          <div className="hero__meta">
-            <span>
-              Müşteri / <strong>{client}</strong>
-            </span>
-            <span>
-              Hizmet / <strong>{service}</strong>
+        <div className="hero__scrim" />
+        <div className="wrap hero__inner">
+          <div className="hero__top">
+            <span className="eyebrow">Öne Çıkan İş — Haziran 2026</span>
+            <span className="hero__score">
+              Awwwards skoru <b>{score}</b> / 10
             </span>
           </div>
-          <Btn variant="secondary" size="lg" arrow magnetic href={href} dataCursor="Projeyi İncele">
-            Projeyi İncele
-          </Btn>
+
+          <MaskTitle lines={lines} />
+
+          <div className="hero__bottom">
+            <div className="hero__meta">
+              <span>
+                Müşteri / <strong>{client}</strong>
+              </span>
+              <span>
+                Hizmet / <strong>{service}</strong>
+              </span>
+            </div>
+            <Btn variant="secondary" size="lg" arrow magnetic href={href} dataCursor="Projeyi İncele">
+              Projeyi İncele
+            </Btn>
+          </div>
         </div>
-      </div>
-    </section>
+      </section>
+      <HeroSwitch />
+    </>
   );
 }
