@@ -3,6 +3,7 @@
 import React, { useState, useRef } from "react";
 import { AdmCard, Badge, Field, Switch } from "@/components/admin/ui";
 import { Icon } from "@/components/admin/AdminIcons";
+import { suggestSeoAction } from "@/lib/actions/ai";
 
 const SITE_PAGES = [
   { id: "home", name: "Anasayfa", url: "/", title: "Marka — Dijitalde yeni standart", desc: "Markaları geleceğe taşıyan ödüllü kreatif stüdyo. Strateji, tasarım ve teknoloji.", indexed: true },
@@ -79,16 +80,8 @@ function SeoEditor({ page, onClose, onSave }: any) {
 
   const ai = async () => {
     setBusy(true);
-    // Simulate AI request
-    await new Promise((r) => setTimeout(r, 1200));
-    const tm = `BAŞLIK: ${p.name} — Marka`;
-    const dm = `AÇIKLAMA: ${p.name} hakkında premium, editoryal ve net bir özet. Bu sayfa kullanıcıların ilgisini çekecek şekilde tasarlanmıştır.`;
-    
-    setP((x: any) => ({ 
-      ...x, 
-      title: tm.replace("BAŞLIK: ", "").trim(), 
-      desc: dm.replace("AÇIKLAMA: ", "").trim() 
-    }));
+    const res = await suggestSeoAction(p.name);
+    if (!("error" in res)) setP((x: any) => ({ ...x, title: res.title, desc: res.description }));
     setBusy(false);
   };
 

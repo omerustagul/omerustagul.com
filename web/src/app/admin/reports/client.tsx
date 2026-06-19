@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import { AdmCard, StatCard } from "@/components/admin/ui";
 import { Icon } from "@/components/admin/AdminIcons";
+import { generateReportAction } from "@/lib/actions/ai";
 
 // Render utility for simple Markdown
 function repInlineBold(s: string) {
@@ -73,23 +74,12 @@ export function ReportsClient({ stats }: { stats: any[] }) {
 
   const run = async () => {
     setBusy(true);
-    // Simulate AI request delay
-    await new Promise((r) => setTimeout(r, 2000));
-    
-    const sampleNarrative = `
-## Yönetici özeti
-Geçtiğimiz hafta, trafik hedeflerimizde **%12'lik** net bir büyüme yakaladık. Özellikle salı ve cuma günleri yayınlanan içeriklerin sosyal medya etkileşimini yukarı taşıdığı görülüyor. Marka bilinirliği metrikleri yükseliş trendinde ve sayfa başı kalma süresi **2.4 dakikaya** ulaştı.
-
-## Öneriler
-*   **Hafta Sonu Etkileşimi:** Hafta sonu trafiğindeki düşüşü canlandırmak için cumartesi sabahları hafif bir bülten veya özet içerik planlanabilir.
-*   **Arama Motoru Optimizasyonu:** Özellikle son yayınlanan 3 makalenin SEO başlıklarını, güncel arama trendlerine göre optimize edelim.
-*   **Dönüşüm Oranı:** Satış sayfalarındaki çağrı butonlarının renklerini ve mikro metinlerini A/B testine sokarak %3 seviyesindeki dönüşüm oranını artırabiliriz.
-    `;
-
-    setReport({
-      date: new Date().toLocaleDateString("tr-TR", { day: "2-digit", month: "long", year: "numeric" }),
-      narrative: sampleNarrative.trim(),
-    });
+    const context =
+      `Haftalık oturumlar: ${week.join(", ")}. ` +
+      `Trafik kaynakları: ${sources.map((s) => `${s.label} %${s.percent}`).join(", ")}. ` +
+      `Özet kartlar: ${stats.map((s: any) => `${s.label ?? ""} ${s.value ?? ""}`).join(", ")}`;
+    const res = await generateReportAction(context);
+    if (!("error" in res)) setReport({ date: res.date, narrative: res.narrative });
     setBusy(false);
   };
 

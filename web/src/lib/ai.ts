@@ -40,6 +40,77 @@ export async function generateBlogDraft(topic: string): Promise<BlogDraft> {
   }
 }
 
+/* --------------------------------------------------------------- reports */
+const REPORT_SYSTEM =
+  "Sen 'Marka' ajansının yapay zeka analistisin. Verilen haftalık metriklerden Türkçe, " +
+  "editöryel ve öz bir yönetici raporu yazarsın. Yalnızca markdown döndür: '## ' başlıklar ve " +
+  "'*   ' madde imleri kullan, emoji kullanma. İki bölüm olsun: '## Yönetici özeti' ve '## Öneriler'.";
+
+/** Generate a weekly executive report. Claude if keyed, else a local simulation. */
+export async function generateReport(context: string): Promise<string> {
+  const apiKey = process.env.ANTHROPIC_API_KEY;
+  if (!apiKey) return simulateReport();
+  try {
+    const client = new Anthropic({ apiKey });
+    const res = await client.messages.create({
+      model: "claude-opus-4-8",
+      max_tokens: 2000,
+      system: REPORT_SYSTEM,
+      messages: [{ role: "user", content: `Bu haftanın verileri: ${context}. Kısa bir yönetici raporu yaz.` }],
+    });
+    const text = res.content.find((b) => b.type === "text")?.text ?? "";
+    return text.trim() || simulateReport();
+  } catch {
+    return simulateReport();
+  }
+}
+
+/* ------------------------------------------------------------------- seo */
+export type SeoSuggestion = { title: string; description: string };
+const SEO_SYSTEM =
+  "Sen bir SEO uzmanısın. Verilen sayfa için Türkçe, tıklanabilir bir meta başlık (en çok 60 karakter) " +
+  "ve meta açıklama (en çok 155 karakter) üretirsin. Emoji kullanma. Çıktıyı YALNIZCA şu şemada geçerli " +
+  'JSON döndür: {"title": string, "description": string}.';
+
+/** Suggest SEO meta for a page. Claude if keyed, else a local simulation. */
+export async function suggestSeo(pageName: string): Promise<SeoSuggestion> {
+  const apiKey = process.env.ANTHROPIC_API_KEY;
+  if (!apiKey) return simulateSeo(pageName);
+  try {
+    const client = new Anthropic({ apiKey });
+    const res = await client.messages.create({
+      model: "claude-opus-4-8",
+      max_tokens: 600,
+      system: SEO_SYSTEM,
+      messages: [{ role: "user", content: `Sayfa: "${pageName}". Bu sayfa için meta başlık ve açıklama öner.` }],
+    });
+    const text = res.content.find((b) => b.type === "text")?.text ?? "";
+    const json = text.slice(text.indexOf("{"), text.lastIndexOf("}") + 1);
+    const parsed = JSON.parse(json) as SeoSuggestion;
+    if (!parsed.title || !parsed.description) return simulateSeo(pageName);
+    return parsed;
+  } catch {
+    return simulateSeo(pageName);
+  }
+}
+
+function simulateReport(): string {
+  return `## Yönetici özeti
+Geçtiğimiz hafta, trafik hedeflerimizde **%12'lik** net bir büyüme yakaladık. Salı ve cuma günleri yayınlanan içeriklerin sosyal medya etkileşimini yukarı taşıdığı görülüyor. Sayfa başı kalma süresi **2.4 dakikaya** ulaştı.
+
+## Öneriler
+*   **Hafta sonu etkileşimi:** Cumartesi sabahları hafif bir bülten veya özet içerik planlanabilir.
+*   **Arama motoru optimizasyonu:** Son yayınlanan 3 makalenin SEO başlıklarını güncel arama trendlerine göre optimize edelim.
+*   **Dönüşüm oranı:** Satış sayfalarındaki çağrı butonlarını A/B testine sokarak %3 seviyesindeki dönüşümü artırabiliriz.`;
+}
+
+function simulateSeo(name: string): SeoSuggestion {
+  return {
+    title: `${name} — Marka`,
+    description: `${name} hakkında premium, editöryel ve net bir özet. Bu sayfa kullanıcıların ilgisini çekecek şekilde tasarlandı.`,
+  };
+}
+
 function simulate(topic: string): BlogDraft {
   const t = topic.trim() || "Dijital tasarım";
   return {
