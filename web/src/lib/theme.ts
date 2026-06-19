@@ -79,6 +79,36 @@ export function fontById(id: string) {
   return FONTS.find((f) => f.id === id) || FONTS[0];
 }
 
+// Server-rendered theme variables (no-FOUC). Mirrors applyTheme() as a CSS
+// string injected into <head> so the published theme paints before hydration.
+export function themeVarsCss(cfg: ThemeConfig): string {
+  const a = cfg.accent;
+  const mix = (p: number, w: string) => `color-mix(in srgb, ${a} ${p}%, ${w})`;
+  const font = fontById(cfg.font);
+  const r = Math.max(0, cfg.radius ?? 10);
+  const decls = [
+    `--accent:${a}`,
+    `--accent-hover:${mix(82, "#000")}`,
+    `--accent-tint:${mix(14, "transparent")}`,
+    `--on-accent:${onAccent(a)}`,
+    `--focus-ring:${a}`,
+    `--green-500:${a}`,
+    `--green-600:${mix(82, "#000")}`,
+    `--green-700:${mix(60, "#000")}`,
+    `--green-400:${mix(72, "#fff")}`,
+    `--green-200:${mix(34, "#fff")}`,
+    `--green-100:${mix(14, "#fff")}`,
+    `--font-sans:${font.family}`,
+    `--radius-xs:${Math.max(0, r - 4)}px`,
+    `--radius-sm:${Math.max(0, r - 2)}px`,
+    `--radius:${r}px`,
+    `--radius-lg:${r + 2}px`,
+    `--radius-xl:${r + 6}px`,
+    `--radius-pill:${r >= 16 ? 999 : r * 2}px`,
+  ];
+  return `:root{${decls.join(";")}}`;
+}
+
 export function loadTheme(): ThemeConfig {
   if (typeof window === "undefined") return { ...DEFAULTS };
   try {

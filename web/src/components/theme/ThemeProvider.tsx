@@ -1,14 +1,7 @@
 "use client";
 
 import { createContext, useCallback, useContext, useEffect, useState } from "react";
-import {
-  applyTheme,
-  DEFAULTS,
-  loadTheme,
-  saveTheme,
-  THEME_KEY,
-  type ThemeConfig,
-} from "@/lib/theme";
+import { applyTheme, DEFAULTS, type ThemeConfig } from "@/lib/theme";
 
 type ThemeContextValue = {
   theme: ThemeConfig;
@@ -18,31 +11,24 @@ type ThemeContextValue = {
 
 const ThemeContext = createContext<ThemeContextValue | null>(null);
 
-export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  // SSR + first render use DEFAULTS; the no-FOUC head script already applied the
-  // saved theme to :root, so there's no visual flash. We hydrate state on mount.
-  const [theme, setTheme] = useState<ThemeConfig>(DEFAULTS);
+export function ThemeProvider({
+  children,
+  initialTheme,
+}: {
+  children: React.ReactNode;
+  initialTheme?: ThemeConfig;
+}) {
+  // The published theme is rendered server-side (SiteSettings DB → <html> + an
+  // inline <style>), so there is no flash. State is seeded from that same value.
+  const [theme, setTheme] = useState<ThemeConfig>(initialTheme ?? DEFAULTS);
 
+  // Ensure the client CSS vars match the (server-rendered) theme after hydration.
   useEffect(() => {
-    const t = loadTheme();
-    setTheme(t);
-    applyTheme(t);
+    applyTheme(theme);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // cross-tab: admin in one tab updates the live site in another
-  useEffect(() => {
-    function onStorage(e: StorageEvent) {
-      if (e.key !== THEME_KEY) return;
-      const t = loadTheme();
-      setTheme(t);
-      applyTheme(t);
-    }
-    window.addEventListener("storage", onStorage);
-    return () => window.removeEventListener("storage", onStorage);
-  }, []);
-
-  // live preview: the admin Appearance iframe posts theme changes instantly
-  // (no reliance on storage-event timing). Preview-only — does not persist.
+  // Live preview: the admin Appearance iframe posts theme changes instantly.
   useEffect(() => {
     function onMessage(e: MessageEvent) {
       if (e.origin !== window.location.origin) return;
@@ -56,17 +42,18 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     return () => window.removeEventListener("message", onMessage);
   }, []);
 
+  // In-session updates (admin live editing + visitor mode toggle). Admin edits
+  // are persisted to the DB by the Appearance screen; the global default lives
+  // in SiteSettings, so this is intentionally not written to localStorage.
   const set = useCallback((patch: Partial<ThemeConfig>) => {
     setTheme((prev) => {
       const next = { ...prev, ...patch };
-      saveTheme(next);
       applyTheme(next);
       return next;
     });
   }, []);
 
   const reset = useCallback(() => {
-    saveTheme(DEFAULTS);
     applyTheme(DEFAULTS);
     setTheme(DEFAULTS);
   }, []);

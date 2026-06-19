@@ -5,6 +5,7 @@ import { AdmCard, Field, Switch, Seg, ImageUpload } from "@/components/admin/ui"
 import { Icon } from "@/components/admin/AdminIcons";
 import { useTheme } from "@/components/theme/ThemeProvider";
 import { ACCENTS, FONTS } from "@/lib/theme";
+import { saveSiteTheme } from "@/lib/actions/theme";
 
 const THEME_OPTIONS = {
   HEADER_TEMPLATES: [
@@ -46,6 +47,19 @@ export function AppearanceClient() {
   // Push every theme change into the preview iframe instantly (live sync).
   const pushPreview = () => previewRef.current?.contentWindow?.postMessage({ type: "mk-theme-preview", theme: cfg }, window.location.origin);
   useEffect(pushPreview, [cfg]);
+
+  // Persist the published theme to the DB (debounced) — global for all visitors.
+  const firstRun = useRef(true);
+  useEffect(() => {
+    if (firstRun.current) {
+      firstRun.current = false;
+      return;
+    }
+    const id = setTimeout(() => {
+      saveSiteTheme(cfg);
+    }, 600);
+    return () => clearTimeout(id);
+  }, [cfg]);
 
   return (
     <div className="adm-grid adm-grid--2" style={{ alignItems: "start", gridTemplateColumns: "1fr 1fr", gap: "2rem", display: "grid" }}>

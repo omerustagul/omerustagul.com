@@ -1,10 +1,11 @@
 import type { Metadata } from "next";
-import Script from "next/script";
 import "./globals.css";
 import { ThemeProvider } from "@/components/theme/ThemeProvider";
 import { SITE_DESC, SITE_NAME, SITE_URL } from "@/lib/site";
 import { getLocale } from "@/lib/i18n-server";
 import { langMeta } from "@/lib/i18n";
+import { getSiteTheme } from "@/lib/theme-server";
+import { fontById, themeVarsCss } from "@/lib/theme";
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
@@ -25,20 +26,30 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  // data-theme is read by the Marka token system. Fonts/resets come from
-  // globals.css → src/styles/marka.css, not next/font.
-  const locale = await getLocale();
+  // The published theme (SiteSettings DB row) is the single source of truth.
+  // It's rendered server-side onto <html> + an inline <style> so it paints
+  // before hydration (no FOUC) and is global for every visitor.
+  const [locale, theme] = await Promise.all([getLocale(), getSiteTheme()]);
   const meta = langMeta(locale);
+  const font = fontById(theme.font);
   return (
-    <html lang={locale} dir={meta.rtl ? "rtl" : "ltr"} data-theme="light" suppressHydrationWarning>
+    <html
+      lang={locale}
+      dir={meta.rtl ? "rtl" : "ltr"}
+      data-theme={theme.mode === "dark" ? "dark" : "light"}
+      data-header-tpl={theme.headerTemplate}
+      data-footer-tpl={theme.footerTemplate}
+      suppressHydrationWarning
+    >
+      <head>
+        <style id="mk-theme-vars" dangerouslySetInnerHTML={{ __html: themeVarsCss(theme) }} />
+        {font.link ? <link rel="stylesheet" href={font.link} /> : null}
+      </head>
       <body>
-        {/* Apply the saved theme before first paint (no flash). Static asset
-            in /public — render-blocking, runs before hydration. */}
-        <Script src="/theme-init.js" strategy="beforeInteractive" />
         <a href="#content" className="mk-skip">
           İçeriğe atla
         </a>
-        <ThemeProvider>
+        <ThemeProvider initialTheme={theme}>
           <div id="content">{children}</div>
         </ThemeProvider>
       </body>
