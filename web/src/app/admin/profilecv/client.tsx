@@ -1,8 +1,9 @@
 "use client";
 
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useTransition } from "react";
 import { ImageUpload, Field, Switch } from "@/components/admin/ui";
 import { Icon } from "@/components/admin/AdminIcons";
+import { saveProfile } from "@/lib/actions/profile";
 
 function FormSection({ title, hint, children }: { title: string; hint?: string; children: React.ReactNode }) {
   return (
@@ -114,11 +115,41 @@ const DEFAULT_PROFILE = {
   featured: []
 };
 
-export function ProfileCVClient() {
+// Repeater items need a stable id; persisted data may lack them.
+function withIds(arr: any, prefix: string) {
+  return (Array.isArray(arr) ? arr : []).map((it: any, i: number) => (it && it.id ? it : { ...it, id: prefix + (i + 1) }));
+}
+function normalize(data: any) {
+  const d = data && typeof data === "object" ? data : {};
+  return {
+    ...DEFAULT_PROFILE,
+    ...d,
+    stats: withIds(d.stats ?? DEFAULT_PROFILE.stats, "s"),
+    experience: withIds(d.experience ?? DEFAULT_PROFILE.experience, "e"),
+    ventures: withIds(d.ventures ?? DEFAULT_PROFILE.ventures, "v"),
+    awards: withIds(d.awards ?? DEFAULT_PROFILE.awards, "a"),
+    featured: withIds(d.featured ?? DEFAULT_PROFILE.featured, "f"),
+    skills: Array.isArray(d.skills) ? d.skills : DEFAULT_PROFILE.skills,
+  };
+}
+
+export function ProfileCVClient({ initial }: { initial?: any }) {
   const iframeRef = useRef<HTMLIFrameElement>(null);
-  const [p, setP] = useState<any>(DEFAULT_PROFILE);
+  const [p, setP] = useState<any>(() => (initial ? normalize(initial) : DEFAULT_PROFILE));
+  const [pending, start] = useTransition();
+  const [saved, setSaved] = useState(false);
 
   const upd = (patch: any) => setP({ ...p, ...patch });
+
+  const save = () =>
+    start(async () => {
+      const res = await saveProfile(p);
+      if (!res?.error) {
+        setSaved(true);
+        setTimeout(() => setSaved(false), 2000);
+        if (iframeRef.current) iframeRef.current.src = "/ben-kimim";
+      }
+    });
 
   const I = ({ k, ph, area }: any) => area
     ? <textarea className="adm-textarea" style={{ minHeight: "7rem" }} value={p[k] || ""} onChange={e => upd({ [k]: e.target.value })} placeholder={ph} />
@@ -130,17 +161,19 @@ export function ProfileCVClient() {
         <span className="adm-badge adm-badge--green">Ben Kimim — CV</span>
         <span className="sp" />
         <button className="adm-btn adm-btn--ghost" onClick={() => { if (confirm("Tüm CV içeriği varsayılana dönsün mü?")) setP(DEFAULT_PROFILE); }}>Sıfırla</button>
-        <a className="adm-btn adm-btn--ghost" href="#" target="_blank" rel="noopener"><Icon name="external" size={15} /> Canlı gör</a>
+        <a className="adm-btn adm-btn--ghost" href="/ben-kimim" target="_blank" rel="noopener"><Icon name="external" size={15} /> Canlı gör</a>
+        {saved && <span className="adm-badge adm-badge--green" style={{ marginRight: ".5rem" }}>Kaydedildi ✓</span>}
+        <button className="adm-btn adm-btn--primary" onClick={save} disabled={pending}>{pending ? "Kaydediliyor…" : "Kaydet"}</button>
       </div>
 
       <div className="pw-split">
         <div className="pw-preview">
           <div className="pw-frame">
-            <iframe ref={iframeRef} src="about:blank" title="CV önizleme" />
+            <iframe ref={iframeRef} src="/ben-kimim" title="CV önizleme" />
             <div style={{ position: "absolute", inset: 0, pointerEvents: "none", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--text-muted)", zIndex: -1 }}>
               <div style={{ textAlign: "center" }}>
                 <Icon name="projects" size={32} />
-                <div style={{ marginTop: "1rem" }}>Profil Sayfası Önizleme (Mock)</div>
+                <div style={{ marginTop: "1rem" }}>Profil önizlemesi — Kaydet&apos;e bastıkça güncellenir</div>
               </div>
             </div>
           </div>
