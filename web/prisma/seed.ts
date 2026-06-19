@@ -145,10 +145,35 @@ async function main() {
 
   // --- blog posts ---
   const POSTS = [
-    { title: "Editöryel tasarımın gücü", category: "MAKALE", readTime: "6 dk", excerpt: "Beyaz alanı bir araç olarak kullanmak neden işe yarar?", featured: true },
-    { title: "Marka sesini bulmak", category: "REHBER", readTime: "8 dk", excerpt: "Tutarlı bir ton, güveni nasıl inşa eder?" },
-    { title: "Hareketin ritmi", category: "MOTION", readTime: "5 dk", excerpt: "Premium animasyonun arkasındaki zamanlama prensipleri." },
-    { title: "Tipografi ölçeği kurmak", category: "MAKALE", readTime: "7 dk", excerpt: "Akışkan clamp ölçekleriyle hiyerarşi." },
+    {
+      title: "Editöryel tasarımın gücü",
+      category: "MAKALE",
+      readTime: "6 dk",
+      excerpt: "Beyaz alanı bir araç olarak kullanmak neden işe yarar?",
+      featured: true,
+      body: "Editöryel tasarım, içeriği bir derginin sayfası gibi kurgular: ritim, hiyerarşi ve nefes alan boşluk.\n\n## Beyaz alan bir araçtır\n\nBoşluk, eksiklik değildir; okuyucunun gözüne yön veren en güçlü araçtır. Doğru kullanıldığında her öğe hak ettiği ağırlığı kazanır.\n\n> İyi tasarım, ne eklediğinle değil, neyi çıkarmaya cesaret ettiğinle ölçülür.\n\nÜç ilke işe yarar:\n\n- Tek bir odak noktası belirle\n- Tipografik ölçeği tutarlı tut\n- Kenar boşluklarını cömert bırak",
+    },
+    {
+      title: "Marka sesini bulmak",
+      category: "REHBER",
+      readTime: "8 dk",
+      excerpt: "Tutarlı bir ton, güveni nasıl inşa eder?",
+      body: "Bir marka sesi, logodan önce gelir. İnsanların seni nasıl hatırladığını belirleyen şey, kelimelerindir.\n\n## Ton, tutarlılıktan doğar\n\nHer temas noktasında aynı kişilikle konuşmak, zamanla güveni inşa eder. Dağınık bir ses, en iyi görsel kimliği bile zayıflatır.\n\n> İnsanlar ne söylediğini unutur ama nasıl hissettirdiğini hatırlar.",
+    },
+    {
+      title: "Hareketin ritmi",
+      category: "MOTION",
+      readTime: "5 dk",
+      excerpt: "Premium animasyonun arkasındaki zamanlama prensipleri.",
+      body: "Premium hissi yaratan şey hız değil, zamanlamadır. İyi hareket görünmez; yalnızca doğru hissettirir.\n\n## Eğri, süreden önemlidir\n\nDoğrusal hareket mekaniktir. Gerçek dünya ivmelenir ve yavaşlar — arayüzlerin de öyle.\n\n> En iyi animasyon, fark edilmeyen ama eksikliği hissedilen animasyondur.",
+    },
+    {
+      title: "Tipografi ölçeği kurmak",
+      category: "MAKALE",
+      readTime: "7 dk",
+      excerpt: "Akışkan clamp ölçekleriyle hiyerarşi.",
+      body: "Sağlam bir tipografik ölçek, tasarımın omurgasıdır. Her başlık ve paragraf, görünmez bir sisteme yaslanır.\n\n## Akışkan ölçek\n\nclamp() ile ölçeği ekran boyutuna bağlamak, kırılma noktası karmaşasını ortadan kaldırır ve hiyerarşiyi her cihazda korur.",
+    },
   ];
   await Promise.all(
     POSTS.map((p) =>

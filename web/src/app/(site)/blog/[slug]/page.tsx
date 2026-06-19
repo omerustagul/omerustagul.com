@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { formatDate } from "@/lib/format";
 import { ScrollProgress } from "@/components/marka/ScrollProgress";
+import { Prose } from "@/components/marka/Prose";
 
 export const dynamic = "force-dynamic";
 
@@ -25,9 +26,7 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
     take: 3,
   });
 
-  const paras = post.body
-    ? post.body.split("\n\n")
-    : ["Bu yazının tam metni yakında. Editöryel içerik admin panelinden yönetilir."];
+  const body = post.body || "Bu yazının tam metni yakında. Editöryel içerik admin panelinden yönetilir.";
 
   return (
     <>
@@ -65,11 +64,7 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
               <span className="ph__tag">KAPAK GÖRSELİ</span>
             </div>
           </div>
-          <div className="prose article__body reveal">
-            {paras.map((p, i) => (
-              <p key={i}>{p}</p>
-            ))}
-          </div>
+          <Prose body={body} />
           {post.category && (
             <div className="article__tags reveal">
               <span className="chip">{post.category}</span>

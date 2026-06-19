@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { formatUSD } from "@/lib/format";
 import { auth } from "@/auth";
 import { BuyButton } from "@/components/market/BuyButton";
+import { ProductGallery } from "@/components/market/ProductGallery";
 import { ReviewForm } from "@/components/marka/ReviewForm";
 
 export const dynamic = "force-dynamic";
@@ -49,23 +50,7 @@ export default async function ProductDetail({ params }: { params: Promise<{ slug
         ← Market
       </Link>
       <div className="prod">
-        <div className="prod__media reveal">
-          <div className="prod__main">
-            <div className="ph" style={{ aspectRatio: "4/3" }}>
-              <div className="ph__in" />
-              <span className="ph__tag">ÖNİZLEME 1</span>
-            </div>
-          </div>
-          <div className="prod__thumbs">
-            {[0, 1, 2].map((i) => (
-              <button key={i} className={`prod__thumb ${i === 0 ? "on" : ""}`} type="button">
-                <div className="ph">
-                  <div className="ph__in" style={{ filter: `hue-rotate(${i * 30}deg)` }} />
-                </div>
-              </button>
-            ))}
-          </div>
-        </div>
+        <ProductGallery count={4} />
 
         <div className="prod__info reveal">
           <span className="eyebrow">Dijital Ürün · Figma</span>

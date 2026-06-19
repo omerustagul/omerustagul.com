@@ -97,12 +97,12 @@ export function BlogGrid({ items }: { items: BlogItem[] }) {
   );
 }
 
-type CourseItem = { title: string; instructor: string; rating: number; students: number; price: string; level: string; slug: string; hue: number };
+type CourseItem = { title: string; instructor: string; rating: number; students: number; price: string; level: string; topic: string; slug: string; hue: number };
 
 export function AcademyGrid({ items }: { items: CourseItem[] }) {
-  const cats = ["Tüm Konular", ...Array.from(new Set(items.map((i) => i.level)))];
+  const cats = ["Tüm Konular", ...Array.from(new Set(items.map((i) => i.topic)))];
   const [active, setActive] = useState("Tüm Konular");
-  const rows = active === "Tüm Konular" ? items : items.filter((i) => i.level === active);
+  const rows = active === "Tüm Konular" ? items : items.filter((i) => i.topic === active);
   return (
     <>
       <Chips cats={cats} active={active} onPick={setActive} count={`${items.length} kurs`} />
@@ -138,9 +138,9 @@ export function AcademyGrid({ items }: { items: CourseItem[] }) {
 type ProductItem = { title: string; seller: string; format: string; type: string; price: string; slug: string; hue: number };
 
 export function MarketGrid({ items }: { items: ProductItem[] }) {
-  const cats = ["Tümü", ...Array.from(new Set(items.map((i) => i.format)))];
+  const cats = ["Tümü", ...Array.from(new Set(items.map((i) => i.type)))];
   const [active, setActive] = useState("Tümü");
-  const rows = active === "Tümü" ? items : items.filter((i) => i.format === active);
+  const rows = active === "Tümü" ? items : items.filter((i) => i.type === active);
   return (
     <>
       <Chips cats={cats} active={active} onPick={setActive} count={`${items.length} ürün`} />
