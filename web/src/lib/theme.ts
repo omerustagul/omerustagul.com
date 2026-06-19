@@ -13,6 +13,16 @@ export type ThemeConfig = {
   mode: "light" | "dark";
   font: string;
   radius: number;
+  popup?: {
+    enabled: boolean;
+    delaySec: number;
+    title: string;
+    text: string;
+    image: string | null;
+    ctaText: string;
+    ctaUrl: string;
+    freqOncePerSession: boolean;
+  };
 };
 
 export const DEFAULTS: ThemeConfig = {
@@ -23,6 +33,16 @@ export const DEFAULTS: ThemeConfig = {
   mode: "light",
   font: "general",
   radius: 10,
+  popup: {
+    enabled: false,
+    delaySec: 5,
+    title: "Yeni sezon kampanyası",
+    text: "Tüm dijital ürünlerde bu haftaya özel %20 indirim.",
+    image: null,
+    ctaText: "Keşfet",
+    ctaUrl: "market",
+    freqOncePerSession: true,
+  },
 };
 
 export const ACCENTS = [

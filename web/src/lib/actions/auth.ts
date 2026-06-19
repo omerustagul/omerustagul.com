@@ -54,3 +54,21 @@ export async function registerAction(
 export async function logoutAction() {
   await signOut({ redirectTo: "/" });
 }
+
+/** Create a user without signing in (used by the inline auth modal; the client
+ *  then calls signIn with redirect:false to avoid a navigation). */
+export async function registerUser(input: { name: string; email: string; password: string }) {
+  const name = input.name.trim();
+  const email = input.email.toLowerCase().trim();
+  const password = input.password;
+  if (!name || !email || !password) return { error: "Ad, e-posta ve şifre gerekli." };
+  if (password.length < 4) return { error: "Şifre en az 4 karakter olmalı." };
+
+  const existing = await prisma.user.findUnique({ where: { email } });
+  if (existing) return { error: "Bu e-posta zaten kayıtlı." };
+
+  await prisma.user.create({
+    data: { name, email, role: "MEMBER", passwordHash: await hashPassword(password) },
+  });
+  return { ok: true as const };
+}

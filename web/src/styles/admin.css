@@ -50,7 +50,6 @@
   font-family: var(--font-mono);
   font-size: 9px;
   letter-spacing: .16em;
-  text-transform: uppercase;
   color: var(--ink-900);
   background: var(--accent);
   padding: .3em .55em;
@@ -88,7 +87,6 @@
   font-family: var(--font-mono);
   font-size: 10px;
   letter-spacing: .16em;
-  text-transform: uppercase;
   color: rgba(255, 255, 255, .4);
   margin: 0 0 .6rem;
   padding-inline: .6rem;
@@ -216,7 +214,7 @@
   gap: .5rem;
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: var(--radius-pill);
+  border-radius: var(--radius-sm);
   padding: .5rem .9rem;
   min-width: 220px;
   color: var(--text-muted);
@@ -297,7 +295,6 @@
   font-family: var(--font-mono);
   font-size: var(--fs-xs);
   letter-spacing: .12em;
-  text-transform: uppercase;
   color: var(--text-muted);
 }
 
@@ -331,10 +328,9 @@
 }
 
 .adm-field>label {
-  font-family: var(--font-mono);
   font-size: var(--fs-label);
+  font-weight: 500;
   letter-spacing: .1em;
-  text-transform: uppercase;
   color: var(--text-muted);
 }
 
@@ -367,13 +363,14 @@
 }
 
 .adm-btn {
+  height: 38px;
   display: inline-flex;
   align-items: center;
   gap: .5ch;
   font-family: var(--font-sans);
   font-weight: 500;
   font-size: var(--fs-sm);
-  border-radius: clamp(2px, calc(var(--radius) * 4), 999px);
+  border-radius: var(--radius-sm);
   padding: .6rem 1.1rem;
   cursor: pointer;
   border: 1px solid transparent;
@@ -418,7 +415,6 @@
   font-family: var(--font-mono);
   font-size: 10px;
   letter-spacing: .08em;
-  text-transform: uppercase;
   padding: .3em .6em;
   border-radius: var(--radius-pill);
 }
@@ -442,21 +438,20 @@
 .adm-seg {
   display: inline-flex;
   background: var(--surface-muted);
-  border-radius: var(--radius-pill);
-  padding: 3px;
+  border-radius: var(--radius-sm);
+  padding: 3.5px;
   gap: 2px;
 }
 
 .adm-seg button {
   border: 0;
   background: none;
-  font-family: var(--font-mono);
   font-size: var(--fs-xs);
+  font-weight: 600;
   letter-spacing: .06em;
-  text-transform: uppercase;
   color: var(--text-muted);
   padding: .4rem .8rem;
-  border-radius: var(--radius-pill);
+  border-radius: var(--radius-sm);
   cursor: pointer;
 }
 
@@ -469,7 +464,7 @@
 .adm-switch {
   width: 42px;
   height: 24px;
-  border-radius: var(--radius-pill);
+  border-radius: var(--radius-lg);
   background: var(--ink-300);
   border: 0;
   position: relative;
@@ -510,9 +505,8 @@
   font-family: var(--font-mono);
   font-size: var(--fs-xs);
   letter-spacing: .1em;
-  text-transform: uppercase;
   color: var(--text-muted);
-  font-weight: 500;
+  font-weight: 600;
   padding: .7rem .8rem;
   border-bottom: 1px solid var(--border);
 }
@@ -539,8 +533,8 @@
 }
 
 .adm-iconbtn {
-  width: 30px;
-  height: 30px;
+  width: 38px;
+  height: 38px;
   border-radius: var(--radius-sm);
   border: 1px solid var(--border);
   background: var(--surface);
@@ -2134,7 +2128,7 @@
   gap: 2px;
   background: var(--surface-muted);
   padding: 3px;
-  border-radius: var(--radius-pill);
+  border-radius: var(--radius-sm);
   margin-bottom: var(--space-5);
 }
 
@@ -2145,7 +2139,7 @@
   font-size: var(--fs-sm);
   color: var(--text-muted);
   padding: .5rem 1.1rem;
-  border-radius: var(--radius-pill);
+  border-radius: var(--radius-sm);
   cursor: pointer;
   white-space: nowrap;
 }
@@ -2712,9 +2706,6 @@
   border-top-width: 2px;
   box-shadow: 0 -2px 0 var(--accent);
   transform: translateY(1px);
-}
-
-st);
 }
 
 .seclist__row.is-hidden {
@@ -4015,7 +4006,7 @@ st);
   gap: .5rem;
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: var(--radius-pill);
+  border-radius: var(--radius-sm);
   padding: .45rem .8rem;
   color: var(--text-muted);
   margin-left: auto;

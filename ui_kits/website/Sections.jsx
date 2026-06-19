@@ -16,9 +16,9 @@ function SectionHead({ eyebrow, title, sub, linkText = "Tümünü Gör" }) {
 
 function LatestWorks() {
   const works = [
-  { title: "Nova Spor Uygulaması", client: "Nova · 2026", category: "UI/UX", hue: 0 },
-  { title: "Pera Galeri kimliği", client: "Pera Sanat · 2025", category: "MARKA", hue: 40 },
-  { title: "Venta e-ticaret", client: "Venta · 2026", category: "E-TİCARET", hue: -50 }];
+    { title: "Nova Spor Uygulaması", client: "Nova · 2026", category: "UI/UX", hue: 0 },
+    { title: "Pera Galeri kimliği", client: "Pera Sanat · 2025", category: "MARKA", hue: 40 },
+    { title: "Venta e-ticaret", client: "Venta · 2026", category: "E-TİCARET", hue: -50 }];
 
   return (
     <section className="section wrap" aria-label="Son projeler">
@@ -47,12 +47,18 @@ function Partners() {
 function Services() {
   const { useState } = React;
   const groups = [
-  { n: "01", name: "Geliştirme", desc: "Headless CMS, animasyon ve ölçeklenebilir yazılım.",
-    subs: [["Web Sitesi Geliştirme", "Editoryal, performanslı ve erişilebilir web siteleri."], ["Mobil Uygulama", "iOS & Android için native ve cross-platform uygulamalar."], ["Yazılım Aracı", "Panel, dashboard ve özel yazılım araçları."]] },
-  { n: "02", name: "Tasarım", desc: "Marka, arayüz ve hareket tasarımı.",
-    subs: [["UI/UX Tasarım", "Araştırma, akış kurgusu ve arayüz tasarımı."], ["Markalaşma", "Strateji, isimlendirme ve marka kimlik sistemleri."], ["Motion & Etkileşim", "Hareket tasarımı ve mikro etkileşimler."]] },
-  { n: "03", name: "Büyüme & Pazarlama", desc: "Dönüşüm, performans ve görünürlük.",
-    subs: [["E-ticaret", "Dönüşüm odaklı mağaza ve ödeme deneyimleri."], ["SEO & Performans", "Teknik SEO, Core Web Vitals ve hız optimizasyonu."]] }];
+    {
+      n: "01", name: "Geliştirme", desc: "Headless CMS, animasyon ve ölçeklenebilir yazılım.",
+      subs: [["Web Sitesi Geliştirme", "Editoryal, performanslı ve erişilebilir web siteleri."], ["Mobil Uygulama", "iOS & Android için native ve cross-platform uygulamalar."], ["Yazılım Aracı", "Panel, dashboard ve özel yazılım araçları."]]
+    },
+    {
+      n: "02", name: "Tasarım", desc: "Marka, arayüz ve hareket tasarımı.",
+      subs: [["UI/UX Tasarım", "Araştırma, akış kurgusu ve arayüz tasarımı."], ["Markalaşma", "Strateji, isimlendirme ve marka kimlik sistemleri."], ["Motion & Etkileşim", "Hareket tasarımı ve mikro etkileşimler."]]
+    },
+    {
+      n: "03", name: "Büyüme & Pazarlama", desc: "Dönüşüm, performans ve görünürlük.",
+      subs: [["E-ticaret", "Dönüşüm odaklı mağaza ve ödeme deneyimleri."], ["SEO & Performans", "Teknik SEO, Core Web Vitals ve hız optimizasyonu."]]
+    }];
 
   const [open, setOpen] = useState(null);
   return (
@@ -73,7 +79,7 @@ function Services() {
                 <div className="svc__panel-in">
                   <ul className="svc__subs">
                     {g.subs.map(([name, desc], i) =>
-                    <li className="svc__sub" key={i} data-cursor>
+                      <li className="svc__sub" key={i} data-cursor>
                         <span className="svc__sub-name" style={{ width: "556px" }}>{name}</span>
                         <span className="svc__sub-desc" style={{ width: "414px" }}>{desc}</span>
                       </li>
@@ -91,10 +97,10 @@ function Services() {
 
 function Academy() {
   const courses = [
-  { title: "Sıfırdan Tasarım Sistemi", instructor: "Deniz Arı", rating: 4.9, reviews: 214, price: "₺1.299", level: "Orta", hue: 0 },
-  { title: "Webflow ile Üretim", instructor: "Ece Kaya", rating: 4.8, reviews: 178, price: "₺899", level: "Başlangıç", hue: 30 },
-  { title: "Motion & Etkileşim", instructor: "Mert Su", rating: 5.0, reviews: 96, price: "₺1.499", level: "İleri", hue: -40 },
-  { title: "Marka Stratejisi", instructor: "Lale Yön", rating: 4.7, reviews: 132, price: "₺1.099", level: "Orta", hue: 70 }];
+    { title: "Sıfırdan Tasarım Sistemi", instructor: "Deniz Arı", rating: 4.9, reviews: 214, price: "₺1.299", level: "Orta", hue: 0 },
+    { title: "Webflow ile Üretim", instructor: "Ece Kaya", rating: 4.8, reviews: 178, price: "₺899", level: "Başlangıç", hue: 30 },
+    { title: "Motion & Etkileşim", instructor: "Mert Su", rating: 5.0, reviews: 96, price: "₺1.499", level: "İleri", hue: -40 },
+    { title: "Marka Stratejisi", instructor: "Lale Yön", rating: 4.7, reviews: 132, price: "₺1.099", level: "Orta", hue: 70 }];
 
   return (
     <section className="section wrap" aria-label="Akademi">
@@ -110,8 +116,8 @@ function Blog() {
       <SectionHead eyebrow="Güncel Yazılar" title="Stüdyodan notlar" linkText="Tüm Yazılar" />
       <div style={{ display: "grid", gridTemplateColumns: "1.4fr 1fr", gap: "var(--space-6)", alignItems: "start" }} className="blog-grid">
         <BlogCard featured category="Görüş" date="12 Haz 2026" readTime="6 dk okuma"
-        title="2026'da editoryal grid'ler neden geri döndü?"
-        excerpt="Bol negatif alan, ince çizgiler ve büyük tipografi: ödüllü sitelerin ortak dili." hue={0} />
+          title="2026'da editoryal grid'ler neden geri döndü?"
+          excerpt="Bol negatif alan, ince çizgiler ve büyük tipografi: ödüllü sitelerin ortak dili." hue={0} />
         <div style={{ display: "flex", flexDirection: "column", gap: "var(--space-6)" }}>
           <BlogCard category="Süreç" date="03 Haz" readTime="4 dk" title="Bir marka kimliğini nasıl kurguluyoruz" hue={40} />
           <BlogCard category="Teknik" date="28 May" readTime="7 dk" title="Smooth scroll ve performans dengesi" hue={-40} />
@@ -124,10 +130,10 @@ function Blog() {
 
 function Market() {
   const products = [
-  { title: "Grid UI Kit", seller: "Marka Studio", format: "Figma", price: "59 USD", hue: 0 },
-  { title: "Portfolyo Şablonu", seller: "Nova Labs", format: "Webflow", price: "39 USD", hue: 40 },
-  { title: "Ikon Seti — 240", seller: "Form Co.", format: "SVG", price: "29 USD", hue: -40 },
-  { title: "Sunum Sistemi", seller: "Pera", format: "Keynote", price: "49 USD", hue: 70 }];
+    { title: "Grid UI Kit", seller: "Marka Studio", format: "Figma", price: "59 USD", hue: 0 },
+    { title: "Portfolyo Şablonu", seller: "Nova Labs", format: "Webflow", price: "39 USD", hue: 40 },
+    { title: "Ikon Seti — 240", seller: "Form Co.", format: "SVG", price: "29 USD", hue: -40 },
+    { title: "Sunum Sistemi", seller: "Pera", format: "Keynote", price: "49 USD", hue: 70 }];
 
   return (
     <section className="section wrap" aria-label="Market">
@@ -143,7 +149,7 @@ function Stats() {
     <section className="section wrap" aria-label="İstatistikler">
       <div className="stats reveal">
         {stats.map(([n, u, label], i) =>
-        <div className="stat" key={i}>
+          <div className="stat" key={i}>
             <div className="stat__num" data-count={n}>{n}<span className="u">{u}</span></div>
             <div className="stat__label">{label}</div>
           </div>
@@ -264,6 +270,6 @@ function toEmbed(url) {
     if (/youtu\.be\//.test(url)) return "https://www.youtube.com/embed/" + url.split("youtu.be/")[1].split(/[?&]/)[0];
     if (/youtube\.com\/watch/.test(url)) { const v = new URL(url).searchParams.get("v"); return "https://www.youtube.com/embed/" + v; }
     if (/vimeo\.com\/(\d+)/.test(url)) return "https://player.vimeo.com/video/" + url.match(/vimeo\.com\/(\d+)/)[1];
-  } catch (e) {}
+  } catch (e) { }
   return url;
 }

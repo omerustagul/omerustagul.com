@@ -6,6 +6,8 @@ import { useRouter } from "next/navigation";
 import { BRAND_NAME, BRAND_SOCIAL } from "@/lib/brand";
 import { useTheme } from "@/components/theme/ThemeProvider";
 import { LOCALE_COOKIE, t, type Locale, type MsgKey } from "@/lib/i18n";
+import { AuthModal } from "@/components/marka/AuthModal";
+import { BookingModal } from "@/components/marka/BookingModal";
 
 const NAV: [MsgKey, string][] = [
   ["partners", "/projects"],
@@ -30,6 +32,7 @@ export function MarkaHeader({ locale, userName }: { locale: Locale; userName: st
   const router = useRouter();
   const { theme, set } = useTheme();
   const [open, setOpen] = useState(false); // mobile overlay
+  const [modal, setModal] = useState<"auth" | "booking" | null>(null);
 
   function setLang(l: Locale) {
     document.cookie = `${LOCALE_COOKIE}=${l}; path=/; max-age=31536000`;
@@ -95,18 +98,18 @@ export function MarkaHeader({ locale, userName }: { locale: Locale; userName: st
                 <span>{userName.split(" ").slice(0, 2).map((w) => w[0]).join("").toUpperCase()}</span>
               </Link>
             ) : (
-              <Link className="acct-login" href="/login" aria-label={t(locale, "login")}>
+              <button className="acct-login" type="button" aria-label={t(locale, "login")} onClick={() => setModal("auth")}>
                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                   <circle cx="12" cy="8" r="4" />
                   <path d="M5 21a7 7 0 0114 0" />
                 </svg>
                 <span>{t(locale, "login")}</span>
-              </Link>
+              </button>
             )}
 
-            <Link className="btn btn--primary" href="/randevu" data-magnetic="">
+            <button className="btn btn--primary" type="button" data-magnetic="" onClick={() => setModal("booking")}>
               {t(locale, "quote")} <span className="arr">→</span>
-            </Link>
+            </button>
 
             <button className="iconbtn menu-toggle" type="button" aria-label="Menü" onClick={() => setOpen(true)}>
               ≡
@@ -134,14 +137,37 @@ export function MarkaHeader({ locale, userName }: { locale: Locale; userName: st
           ))}
         </nav>
         <div className="overlay__foot">
-          <Link className="btn btn--ghost btn--lg" href="/login" onClick={() => setOpen(false)}>
-            {t(locale, "login")}
-          </Link>
-          <Link className="btn btn--primary btn--lg" href="/randevu" onClick={() => setOpen(false)}>
+          {userName ? (
+            <Link className="btn btn--ghost btn--lg" href="/admin" onClick={() => setOpen(false)}>
+              {userName}
+            </Link>
+          ) : (
+            <button
+              className="btn btn--ghost btn--lg"
+              type="button"
+              onClick={() => {
+                setOpen(false);
+                setModal("auth");
+              }}
+            >
+              {t(locale, "login")}
+            </button>
+          )}
+          <button
+            className="btn btn--primary btn--lg"
+            type="button"
+            onClick={() => {
+              setOpen(false);
+              setModal("booking");
+            }}
+          >
             {t(locale, "quote")} <span className="arr">→</span>
-          </Link>
+          </button>
         </div>
       </div>
+
+      {modal === "auth" && <AuthModal onClose={() => setModal(null)} />}
+      {modal === "booking" && <BookingModal onClose={() => setModal(null)} />}
     </>
   );
 }
