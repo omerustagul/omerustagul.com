@@ -7,6 +7,7 @@ import { WeeklyWork, Collections } from "@/components/marka/community";
 import { GamesSection } from "@/components/marka/games-section";
 import { getMyGameStats } from "@/lib/actions/games";
 import { getHomeLayout } from "@/lib/home-layout-server";
+import { CustomSectionView } from "@/components/marka/CustomSectionView";
 import { Fragment, type ReactNode } from "react";
 
 export const dynamic = "force-dynamic";
@@ -125,13 +126,17 @@ export default async function Home() {
     cta: <CTABlocks />,
   };
 
+  const customById = Object.fromEntries(layout.custom.map((c) => [c.id, c]));
+
   return (
     <main>
       {layout.order
-        .filter((id) => !layout.hidden[id] && sectionMap[id])
-        .map((id) => (
-          <Fragment key={id}>{sectionMap[id]}</Fragment>
-        ))}
+        .filter((id) => !layout.hidden[id])
+        .map((id) => {
+          if (sectionMap[id]) return <Fragment key={id}>{sectionMap[id]}</Fragment>;
+          const c = customById[id];
+          return c ? <CustomSectionView key={id} section={c} /> : null;
+        })}
     </main>
   );
 }
