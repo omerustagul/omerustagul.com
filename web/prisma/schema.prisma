@@ -267,7 +267,12 @@ model SiteSettings {
 
 model HomeLayout {
   id   Int  @id @default(1)
-  data Json // { order: string[], hidden: Record<string, boolean> }
+  data Json // { order: string[], hidden: Record<string, boolean>, custom: [] }
+}
+
+model PageText {
+  id   Int  @id @default(1)
+  data Json // { [key: string]: string } — inline text overrides
 }
 
 model Translation {

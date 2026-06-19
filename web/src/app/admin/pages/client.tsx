@@ -64,6 +64,7 @@ export function PagesClient({ builtins, initialLayout }: { builtins: HomeSection
   const [device, setDevice] = useState("desk");
   const [saved, setSaved] = useState(false);
   const [addOpen, setAddOpen] = useState(false);
+  const [editText, setEditText] = useState(false);
   const [editId, setEditId] = useState<string | null>(null);
   const [pending, start] = useTransition();
   const previewRef = useRef<HTMLIFrameElement>(null);
@@ -138,6 +139,9 @@ export function PagesClient({ builtins, initialLayout }: { builtins: HomeSection
               </div>
             )}
           </div>
+          <button className={`adm-btn ${editText ? "adm-btn--primary" : "adm-btn--ghost"}`} onClick={() => setEditText((v) => !v)}>
+            <Icon name="edit" size={14} /> {editText ? "Düzenlemeyi bitir" : "Metinleri düzenle"}
+          </button>
           <a className="adm-btn adm-btn--ghost" href="/" target="_blank" rel="noopener"><Icon name="external" size={15} /> Canlı gör</a>
           <button className="adm-btn adm-btn--primary" onClick={save} disabled={pending}>{pending ? "Kaydediliyor…" : "Kaydet"}</button>
         </>
@@ -153,8 +157,13 @@ export function PagesClient({ builtins, initialLayout }: { builtins: HomeSection
             ))}
           </div>
           <div className="pw-frame" style={{ maxWidth: dev.w }}>
-            <iframe ref={previewRef} src="/" title="Anasayfa önizleme" />
+            <iframe ref={previewRef} src={editText ? "/?edit=1" : "/"} title="Anasayfa önizleme" />
           </div>
+          {editText && (
+            <p className="pw-hint" style={{ marginTop: ".5rem" }}>
+              <Icon name="ai" size={13} /> Önizlemede <b>vurgulanan başlıklara</b> tıklayıp yaz; Enter ile kaydedilir ve canlı siteye yansır.
+            </p>
+          )}
         </div>
 
         <aside className="pw-panel">

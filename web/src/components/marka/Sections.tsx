@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { BlogCard, CourseCard, ProductCard, ProjectCard } from "@/components/marka/parts";
+import { txt, type PageTextMap } from "@/lib/page-text";
 
 /* Faithful port of ui_kits/website/Sections.jsx. Data-driven sections take props
    (wired to the DB in the page); Services/Stats/CTA keep the brand sample copy. */
@@ -10,13 +11,19 @@ export function SectionHead({
   sub,
   linkText = "Tümünü Gör",
   linkHref = "#",
+  kb,
+  overrides,
 }: {
   eyebrow: string;
   title: string;
   sub?: string;
   linkText?: string;
   linkHref?: string;
+  kb?: string;
+  overrides?: PageTextMap;
 }) {
+  const ov = (suffix: string, def: string) => (kb ? txt(overrides, `${kb}.${suffix}`, def) : def);
+  const dk = (suffix: string) => (kb ? `${kb}.${suffix}` : undefined);
   return (
     <header
       className="reveal"
@@ -30,9 +37,9 @@ export function SectionHead({
       }}
     >
       <div style={{ display: "flex", flexDirection: "column", gap: "1rem", maxWidth: "46ch" }}>
-        <span className="eyebrow">{eyebrow}</span>
-        <h2 style={{ fontSize: "var(--fs-h1)", fontWeight: 600, letterSpacing: "var(--ls-heading)" }}>{title}</h2>
-        {sub && <p style={{ color: "var(--text-muted)", fontSize: "var(--fs-lead)" }}>{sub}</p>}
+        <span className="eyebrow" data-mk-key={dk("eyebrow")}>{ov("eyebrow", eyebrow)}</span>
+        <h2 data-mk-key={dk("title")} style={{ fontSize: "var(--fs-h1)", fontWeight: 600, letterSpacing: "var(--ls-heading)" }}>{ov("title", title)}</h2>
+        {sub && <p data-mk-key={dk("sub")} style={{ color: "var(--text-muted)", fontSize: "var(--fs-lead)" }}>{ov("sub", sub)}</p>}
       </div>
       {linkText && (
         <Link className="btn btn--ghost" href={linkHref} data-cursor="">
@@ -45,10 +52,10 @@ export function SectionHead({
 
 type Work = { id?: string; title: string; client?: string; category?: string; hue?: number; href: string; votes?: number; voted?: boolean; authed?: boolean };
 
-export function LatestWorks({ works }: { works: Work[] }) {
+export function LatestWorks({ works, overrides }: { works: Work[]; overrides?: PageTextMap }) {
   return (
     <section className="section wrap" aria-label="Son projeler">
-      <SectionHead eyebrow="Son Projeler" title="Yakın zamanda teslim ettiklerimiz" linkHref="/projects" />
+      <SectionHead eyebrow="Son Projeler" title="Yakın zamanda teslim ettiklerimiz" linkHref="/projects" kb="works" overrides={overrides} />
       <div className="grid-3">
         {works.map((w, i) => (
           <ProjectCard key={i} {...w} />
@@ -79,7 +86,7 @@ export function Partners({ names }: { names: string[] }) {
 
 type Course = { title: string; instructor?: string; rating?: number; reviews?: number; price?: string; level?: string; hue?: number; href: string };
 
-export function Academy({ courses }: { courses: Course[] }) {
+export function Academy({ courses, overrides }: { courses: Course[]; overrides?: PageTextMap }) {
   return (
     <section className="section wrap" aria-label="Akademi">
       <SectionHead
@@ -88,6 +95,8 @@ export function Academy({ courses }: { courses: Course[] }) {
         sub="Sektörün önde gelen tasarımcılarından kurslar."
         linkText="Tüm Kursları Gör"
         linkHref="/academy"
+        kb="academy"
+        overrides={overrides}
       />
       <div className="grid-4">
         {courses.map((c, i) => (
@@ -100,10 +109,10 @@ export function Academy({ courses }: { courses: Course[] }) {
 
 type Post = { title: string; excerpt?: string; category?: string; date?: string; readTime?: string; hue?: number; href: string };
 
-export function Blog({ featured, rest }: { featured?: Post; rest: Post[] }) {
+export function Blog({ featured, rest, overrides }: { featured?: Post; rest: Post[]; overrides?: PageTextMap }) {
   return (
     <section className="section wrap" aria-label="Blog">
-      <SectionHead eyebrow="Güncel Yazılar" title="Stüdyodan notlar" linkText="Tüm Yazılar" linkHref="/blog" />
+      <SectionHead eyebrow="Güncel Yazılar" title="Stüdyodan notlar" linkText="Tüm Yazılar" linkHref="/blog" kb="blog" overrides={overrides} />
       <div style={{ display: "grid", gridTemplateColumns: "1.4fr 1fr", gap: "var(--space-6)", alignItems: "start" }} className="blog-grid">
         {featured && <BlogCard featured {...featured} />}
         <div style={{ display: "flex", flexDirection: "column", gap: "var(--space-6)" }}>
@@ -118,10 +127,10 @@ export function Blog({ featured, rest }: { featured?: Post; rest: Post[] }) {
 
 type Product = { title: string; seller?: string; price?: string; format?: string; hue?: number; href: string };
 
-export function Market({ products }: { products: Product[] }) {
+export function Market({ products, overrides }: { products: Product[]; overrides?: PageTextMap }) {
   return (
     <section className="section wrap" aria-label="Market">
-      <SectionHead eyebrow="Şablonlar & Dijital Ürünler" title="Market" linkText="Market'e Git" linkHref="/market" />
+      <SectionHead eyebrow="Şablonlar & Dijital Ürünler" title="Market" linkText="Market'e Git" linkHref="/market" kb="market" overrides={overrides} />
       <div className="grid-4">
         {products.map((p, i) => (
           <ProductCard key={i} {...p} />

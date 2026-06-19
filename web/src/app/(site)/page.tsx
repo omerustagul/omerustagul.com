@@ -7,7 +7,9 @@ import { WeeklyWork, Collections } from "@/components/marka/community";
 import { GamesSection } from "@/components/marka/games-section";
 import { getMyGameStats } from "@/lib/actions/games";
 import { getHomeLayout } from "@/lib/home-layout-server";
+import { getPageText } from "@/lib/page-text-server";
 import { CustomSectionView } from "@/components/marka/CustomSectionView";
+import { InlineEditor } from "@/components/marka/InlineEditor";
 import { Fragment, type ReactNode } from "react";
 
 export const dynamic = "force-dynamic";
@@ -108,20 +110,22 @@ export default async function Home() {
   }
 
   const gameStats = authed ? await getMyGameStats() : {};
-  const layout = await getHomeLayout();
+  const [layout, pageText] = await Promise.all([getHomeLayout(), getPageText()]);
+  const role = session?.user?.role;
+  const canEdit = role === "ADMIN" || role === "EDITOR";
 
   // Built-in sections keyed by id; the admin Sayfalar layout drives order + visibility.
   const sectionMap: Record<string, ReactNode> = {
     hero: <Hero lines={["Atlas Finans", "yeniden", "markalaşma"]} client="Atlas Bank" service="Marka · Web · Ürün" score="9.2" href="/projects" />,
-    works: <LatestWorks works={works} />,
-    weekly: <WeeklyWork items={weekly} authed={authed} />,
+    works: <LatestWorks works={works} overrides={pageText} />,
+    weekly: <WeeklyWork items={weekly} authed={authed} overrides={pageText} />,
     partners: <Partners names={PARTNERS} />,
     services: <Services />,
-    academy: <Academy courses={COURSES} />,
-    collections: <Collections earnedIds={earnedIds} authed={authed} follows={follows} />,
+    academy: <Academy courses={COURSES} overrides={pageText} />,
+    collections: <Collections earnedIds={earnedIds} authed={authed} follows={follows} overrides={pageText} />,
     games: <GamesSection authed={authed} stats={gameStats} />,
-    blog: <Blog featured={BLOG_FEATURED} rest={BLOG_REST} />,
-    market: <Market products={PRODUCTS} />,
+    blog: <Blog featured={BLOG_FEATURED} rest={BLOG_REST} overrides={pageText} />,
+    market: <Market products={PRODUCTS} overrides={pageText} />,
     stats: <Stats />,
     cta: <CTABlocks />,
   };
@@ -137,6 +141,7 @@ export default async function Home() {
           const c = customById[id];
           return c ? <CustomSectionView key={id} section={c} /> : null;
         })}
+      <InlineEditor canEdit={canEdit} />
     </main>
   );
 }

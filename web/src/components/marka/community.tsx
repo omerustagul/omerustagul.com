@@ -7,6 +7,7 @@ import { Ph } from "@/components/marka/parts";
 import { VoteButton } from "@/components/marka/VoteButton";
 import { SectionHead } from "@/components/marka/Sections";
 import { toggleFollow } from "@/lib/actions/follow";
+import type { PageTextMap } from "@/lib/page-text";
 
 /* Faithful port of ui_kits/website/Community.jsx — Haftanın İşi (live voting +
    vote-driven ranking), Koleksiyonlar (DB-backed follow) + Rozetler (earned). */
@@ -22,13 +23,13 @@ export type WeeklyItem = {
   slug: string;
 };
 
-export function WeeklyWork({ items, authed }: { items: WeeklyItem[]; authed: boolean }) {
+export function WeeklyWork({ items, authed, overrides }: { items: WeeklyItem[]; authed: boolean; overrides?: PageTextMap }) {
   if (!items.length) return null;
   const top = items[0];
   const rest = items.slice(1);
   return (
     <section className="section wrap weekly" aria-label="Haftanın işi">
-      <SectionHead eyebrow="Topluluk" title="Haftanın İşi" sub="Topluluğun oylarıyla öne çıkan projeler. Sen de beğen, sıralamayı belirle." linkText="" />
+      <SectionHead eyebrow="Topluluk" title="Haftanın İşi" sub="Topluluğun oylarıyla öne çıkan projeler. Sen de beğen, sıralamayı belirle." linkText="" kb="weekly" overrides={overrides} />
       <div className="weekly__grid">
         <Link className="weekly__hero reveal" href={`/projects/${top.slug}`} data-cursor="Projeyi Gör">
           <div className="weekly__cover">
@@ -185,14 +186,16 @@ export function Collections({
   earnedIds = [],
   authed = false,
   follows = { following: {}, extra: {} },
+  overrides,
 }: {
   earnedIds?: string[];
   authed?: boolean;
   follows?: FollowState;
+  overrides?: PageTextMap;
 }) {
   return (
     <section className="section wrap collections" aria-label="Koleksiyonlar">
-      <SectionHead eyebrow="İlham" title="Koleksiyonlar" sub="Küratörlü proje koleksiyonlarını takip et, ilham akışını kişiselleştir." linkText="Tümünü Gör" linkHref="/blog" />
+      <SectionHead eyebrow="İlham" title="Koleksiyonlar" sub="Küratörlü proje koleksiyonlarını takip et, ilham akışını kişiselleştir." linkText="Tümünü Gör" linkHref="/blog" kb="collections" overrides={overrides} />
       <Badges earnedIds={earnedIds} />
       <div className="grid-4 collections__grid">
         {COLLECTIONS.map((c) => (
