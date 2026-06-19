@@ -8,15 +8,14 @@ import { t, type Locale, type MsgKey } from "@/lib/i18n";
 /* Faithful port of the prototype's footer (theme/site-chrome.js): columns +
    compact templates, driven by MarkaTheme.footerTemplate, localized labels. */
 
-// TODO(D4): about → /hakkimizda, cv → /ben-kimim.
 const L = {
   portfolio: "/projects",
   blog: "/blog",
   academy: "/academy",
   market: "/market",
   contact: "/iletisim",
-  about: "/iletisim",
-  cv: "/iletisim",
+  about: "/hakkimizda",
+  cv: "/ben-kimim",
 };
 
 const COLS: [MsgKey, [MsgKey, string][]][] = [

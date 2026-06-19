@@ -14,7 +14,7 @@ import { BookingModal } from "@/components/marka/BookingModal";
    templates driven by MarkaTheme, mega menu on "Keşfet", account dropdown,
    language dropdown (tr/en/de/ar), localized labels. */
 
-// Route map for the web app. TODO(D4): about → /hakkimizda, cv → /ben-kimim.
+// Route map for the web app.
 const LINKS = {
   home: "/",
   portfolio: "/projects",
@@ -23,8 +23,8 @@ const LINKS = {
   academy: "/academy",
   market: "/market",
   contact: "/iletisim",
-  about: "/iletisim",
-  cv: "/iletisim",
+  about: "/hakkimizda",
+  cv: "/ben-kimim",
 };
 
 const PRIMARY: [MsgKey, string][] = [

@@ -4,6 +4,7 @@ import "dotenv/config";
 import bcrypt from "bcryptjs";
 import { PrismaClient } from "../src/generated/prisma/client";
 import { PrismaPg } from "@prisma/adapter-pg";
+import { DEFAULT_PROFILE } from "../src/lib/profile";
 
 const ADMIN_EMAIL = "admin@marka.test";
 const ADMIN_PASSWORD = "admin1234"; // dev only — change in production
@@ -184,9 +185,7 @@ async function main() {
       data: { headerTemplate: "classic", footerTemplate: "columns", heroVariant: "full", accent: "#16D17F", mode: "light", font: "general", radius: 10 },
     },
   });
-  await prisma.profile.create({
-    data: { data: { name: "Marka", title: "Kreatif Stüdyo", bio: "Markaları geleceğe taşıyoruz." } },
-  });
+  await prisma.profile.create({ data: { data: DEFAULT_PROFILE } });
 
   const counts = {
     users: await prisma.user.count(),
