@@ -265,6 +265,11 @@ model SiteSettings {
   data Json // the mk-theme blob (header/footer tpl, accent, font, radius, mode, popup)
 }
 
+model HomeLayout {
+  id   Int  @id @default(1)
+  data Json // { order: string[], hidden: Record<string, boolean> }
+}
+
 model Translation {
   id    String @id @default(cuid())
   lang  String // tr | en | de | ar

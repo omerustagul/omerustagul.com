@@ -6,6 +6,8 @@ import { Services } from "@/components/marka/Services";
 import { WeeklyWork, Collections } from "@/components/marka/community";
 import { GamesSection } from "@/components/marka/games-section";
 import { getMyGameStats } from "@/lib/actions/games";
+import { getHomeLayout } from "@/lib/home-layout-server";
+import { Fragment, type ReactNode } from "react";
 
 export const dynamic = "force-dynamic";
 
@@ -105,21 +107,31 @@ export default async function Home() {
   }
 
   const gameStats = authed ? await getMyGameStats() : {};
+  const layout = await getHomeLayout();
+
+  // Built-in sections keyed by id; the admin Sayfalar layout drives order + visibility.
+  const sectionMap: Record<string, ReactNode> = {
+    hero: <Hero lines={["Atlas Finans", "yeniden", "markalaşma"]} client="Atlas Bank" service="Marka · Web · Ürün" score="9.2" href="/projects" />,
+    works: <LatestWorks works={works} />,
+    weekly: <WeeklyWork items={weekly} authed={authed} />,
+    partners: <Partners names={PARTNERS} />,
+    services: <Services />,
+    academy: <Academy courses={COURSES} />,
+    collections: <Collections earnedIds={earnedIds} authed={authed} follows={follows} />,
+    games: <GamesSection authed={authed} stats={gameStats} />,
+    blog: <Blog featured={BLOG_FEATURED} rest={BLOG_REST} />,
+    market: <Market products={PRODUCTS} />,
+    stats: <Stats />,
+    cta: <CTABlocks />,
+  };
 
   return (
     <main>
-      <Hero lines={["Atlas Finans", "yeniden", "markalaşma"]} client="Atlas Bank" service="Marka · Web · Ürün" score="9.2" href="/projects" />
-      <LatestWorks works={works} />
-      <WeeklyWork items={weekly} authed={authed} />
-      <Partners names={PARTNERS} />
-      <Services />
-      <Academy courses={COURSES} />
-      <Collections earnedIds={earnedIds} authed={authed} follows={follows} />
-      <GamesSection authed={authed} stats={gameStats} />
-      <Blog featured={BLOG_FEATURED} rest={BLOG_REST} />
-      <Market products={PRODUCTS} />
-      <Stats />
-      <CTABlocks />
+      {layout.order
+        .filter((id) => !layout.hidden[id] && sectionMap[id])
+        .map((id) => (
+          <Fragment key={id}>{sectionMap[id]}</Fragment>
+        ))}
     </main>
   );
 }
