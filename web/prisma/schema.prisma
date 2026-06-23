@@ -3,8 +3,9 @@
 // See ../../MIGRATION.md §3 for the field provenance.
 
 generator client {
-  provider = "prisma-client"
-  output   = "../src/generated/prisma"
+  provider        = "prisma-client"
+  output          = "../src/generated/prisma"
+  previewFeatures = ["partialIndexes"] // Booking slot kısmi benzersiz index'i (aşağıda)
 }
 
 datasource db {
@@ -245,6 +246,11 @@ model Booking {
   slot      DateTime
   status    String   @default("pending")
   createdAt DateTime @default(now())
+
+  // Double-booking yarışı UYGULAMA düzeyinde önlenir: createBooking, slot'a özel bir Postgres
+  // advisory lock'lu transaction içinde önce uygunluğu yeniden kontrol edip sonra insert eder.
+  // DB'de slot üzerinde unique kısıt YOK — Prisma 7 kısmi (yalnızca iptal-olmayan) unique index'i
+  // ifade edemiyor ve full unique, iptal edilen slotun yeniden açılmasını engellerdi.
 }
 
 model BookingConfig {

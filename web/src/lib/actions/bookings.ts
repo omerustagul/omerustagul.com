@@ -82,7 +82,26 @@ export async function createBooking(_prev: State | undefined, formData: FormData
     return { error: "Bu zaman artık uygun değil. Lütfen başka bir saat seç." };
   }
 
-  await prisma.booking.create({ data: { name, email, phone, topic, type, message, slot } });
+  // Uygunluk kontrolü ile insert arasındaki yarışı kapatmak için: slot'a özel bir Postgres
+  // advisory lock alıp, kilit altında son kez "dolu mu" bakıp insert ediyoruz. Aynı slot için
+  // eşzamanlı istekler seri hale gelir → ikincisi dolu görür ve reddedilir (DB kısıtı gerekmez).
+  let taken = false;
+  await prisma.$transaction(async (tx) => {
+    // $executeRaw (queryRaw değil): pg_advisory_xact_lock void döner ve queryRaw bunu deserialize
+    // edemez. Lock, transaction'ın tek bağlantısında alınır → aşağıdaki kontrol+insert ile aynı session.
+    await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtextextended(${slot.toISOString()}, 0))`;
+    const clash = await tx.booking.findFirst({
+      where: { slot, status: { not: "cancelled" } },
+      select: { id: true },
+    });
+    if (clash) {
+      taken = true;
+      return;
+    }
+    await tx.booking.create({ data: { name, email, phone, topic, type, message, slot } });
+  });
+  if (taken) return { error: "Bu zaman artık uygun değil. Lütfen başka bir saat seç." };
+
   revalidatePath("/admin/bookings");
   return { ok: true };
 }
