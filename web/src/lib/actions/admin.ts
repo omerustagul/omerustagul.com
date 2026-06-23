@@ -211,21 +211,6 @@ export async function removeLead(id: string) {
   revalidatePath("/admin/leads");
 }
 
-/* --------------------------------------------------------------- bookings */
-export async function setBookingStatus(fd: FormData) {
-  await requireAdmin();
-  await prisma.booking.update({
-    where: { id: str(fd, "id") },
-    data: { status: str(fd, "status") || "pending" },
-  });
-  revalidatePath("/admin/bookings");
-}
-export async function deleteBooking(fd: FormData) {
-  await requireAdmin();
-  await prisma.booking.delete({ where: { id: str(fd, "id") } });
-  revalidatePath("/admin/bookings");
-}
-
 /* --------------------------------------------------------------- settings */
 export async function saveSettings(fd: FormData) {
   await requireAdmin();

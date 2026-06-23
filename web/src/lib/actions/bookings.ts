@@ -73,6 +73,7 @@ export async function createBooking(_prev: State | undefined, formData: FormData
   const slotRaw = String(formData.get("slot") ?? "").trim();
 
   if (!name || !email || !slotRaw) return { error: "Ad, e-posta ve tarih gerekli." };
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return { error: "Geçerli bir e-posta gir." };
   const slot = new Date(slotRaw);
   if (Number.isNaN(slot.getTime())) return { error: "Geçersiz tarih." };
 
