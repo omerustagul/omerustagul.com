@@ -9,9 +9,10 @@ import {
   buildMonth,
   type BookingConfigData,
 } from "@/lib/booking-config";
+import { Select } from "@/components/ui";
 
 const TOPICS = ["Marka & ürün", "Web tasarım", "Geliştirme", "Akademi / eğitim", "Diğer"];
-const TYPES = ["Online", "Yüz yüze", "Telefon"];
+const TYPES = ["Online", "Telefon"];
 const STEPS = ["Kişisel bilgiler", "Detaylar", "Tarih & saat"];
 const DOW = ["Pzt", "Sal", "Çar", "Per", "Cum", "Cmt", "Paz"];
 const MONTHS = ["Ocak", "Şubat", "Mart", "Nisan", "Mayıs", "Haziran", "Temmuz", "Ağustos", "Eylül", "Ekim", "Kasım", "Aralık"];
@@ -216,17 +217,14 @@ export function BookingModal({ onClose }: { onClose: () => void }) {
 
             {step === 2 && (
               <>
+                <Select label="Konu" value={form.topic} onChange={(e) => set("topic", e.target.value)}>
+                  {TOPICS.map((t) => (
+                    <option key={t}>{t}</option>
+                  ))}
+                </Select>
                 <label>
-                  Konu
-                  <select value={form.topic} onChange={(e) => set("topic", e.target.value)}>
-                    {TOPICS.map((t) => (
-                      <option key={t}>{t}</option>
-                    ))}
-                  </select>
-                </label>
-                <label>
-                  Görüşme türü
-                  <div className="bookm__seg" role="group" aria-label="Görüşme türü">
+                  Görüşmeyi nasıl tercih edersiniz?
+                  <div className="bookm__seg" role="group" aria-label="Görüşmeyi nasıl tercih edersiniz">
                     {TYPES.map((t) => (
                       <button key={t} type="button" className={form.type === t ? "on" : ""} onClick={() => set("type", t)}>
                         {t}

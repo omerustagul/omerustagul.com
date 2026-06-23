@@ -372,7 +372,7 @@
   background: var(--bg);
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
-  padding: var(--space-7);
+  padding: var(--space-6);
   box-shadow: var(--shadow-pop);
   animation: authpop .3s var(--ease-out) forwards;
 }
@@ -504,7 +504,8 @@
 }
 
 .bookm__box {
-  max-width: 440px;
+  width: fit-content;
+  max-width: none;
 }
 
 .bookm__title {
@@ -560,12 +561,14 @@
   gap: .4rem;
   margin: var(--space-4) 0 var(--space-5);
 }
+
 .bookm__step {
   display: flex;
   align-items: center;
   gap: .45rem;
   color: var(--text-muted);
 }
+
 .bookm__step .n {
   width: 26px;
   height: 26px;
@@ -577,17 +580,29 @@
   font-family: var(--font-mono);
   font-size: var(--fs-xs);
 }
-.bookm__step.on .n { border-color: var(--accent); color: var(--accent); }
-.bookm__step.done .n { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
+
+.bookm__step.on .n {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.bookm__step.done .n {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--on-accent);
+}
+
 .bookm__step .lbl {
-  font-family: var(--font-mono);
   font-size: var(--fs-xs);
-  letter-spacing: var(--ls-label);
-  text-transform: uppercase;
+  font-weight: 500;
   white-space: nowrap;
 }
+
 .bookm__step.on .lbl,
-.bookm__step.done .lbl { color: var(--text); }
+.bookm__step.done .lbl {
+  color: var(--text);
+}
+
 .bookm__steps .bar {
   flex: 1;
   height: 1px;
@@ -605,6 +620,7 @@
   background: var(--surface-muted);
   border-radius: var(--radius-pill);
 }
+
 .bookm__seg button {
   padding: .5rem .4rem;
   border: 0;
@@ -616,6 +632,7 @@
   cursor: pointer;
   transition: background var(--dur-fast), color var(--dur-fast);
 }
+
 .bookm__seg button.on {
   background: var(--bg);
   color: var(--text);
@@ -634,10 +651,21 @@
   padding: .7rem .8rem;
   transition: border-color var(--dur-fast);
 }
-.authm__form select { cursor: pointer; }
-.authm__form textarea { min-height: 5rem; resize: vertical; }
+
+.authm__form select {
+  cursor: pointer;
+}
+
+.authm__form textarea {
+  min-height: 5rem;
+  resize: vertical;
+}
+
 .authm__form select:focus,
-.authm__form textarea:focus { outline: none; border-color: var(--accent); }
+.authm__form textarea:focus {
+  outline: none;
+  border-color: var(--accent);
+}
 
 /* --- takvim --- */
 .bookm__cal {
@@ -645,17 +673,24 @@
   border-radius: var(--radius);
   padding: var(--space-3);
 }
+
 .bookm__cal-head {
   display: flex;
   align-items: center;
   justify-content: space-between;
   margin-bottom: var(--space-3);
 }
+
 .bookm__cal-head b {
   font-family: var(--font-mono);
   font-size: var(--fs-sm);
 }
-.bookm__cal-nav { display: flex; gap: .25rem; }
+
+.bookm__cal-nav {
+  display: flex;
+  gap: .25rem;
+}
+
 .bookm__cal-nav button {
   width: 30px;
   height: 30px;
@@ -665,12 +700,18 @@
   color: var(--text);
   cursor: pointer;
 }
-.bookm__cal-nav button:disabled { opacity: .35; cursor: not-allowed; }
+
+.bookm__cal-nav button:disabled {
+  opacity: .35;
+  cursor: not-allowed;
+}
+
 .bookm__cal-grid {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
   gap: 4px;
 }
+
 .bookm__cal-dow {
   text-align: center;
   font-family: var(--font-mono);
@@ -678,6 +719,7 @@
   color: var(--text-muted);
   padding-bottom: 4px;
 }
+
 .bookm__day {
   aspect-ratio: 1 / 1;
   display: grid;
@@ -691,10 +733,26 @@
   cursor: pointer;
   transition: border-color var(--dur-fast), background var(--dur-fast), color var(--dur-fast);
 }
-.bookm__day:hover:not(.is-disabled) { border-color: var(--accent); }
-.bookm__day.is-disabled { opacity: .3; cursor: not-allowed; background: transparent; }
-.bookm__day.is-on { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
-.bookm__day.is-empty { visibility: hidden; }
+
+.bookm__day:hover:not(.is-disabled) {
+  border-color: var(--accent);
+}
+
+.bookm__day.is-disabled {
+  opacity: .3;
+  cursor: not-allowed;
+  background: transparent;
+}
+
+.bookm__day.is-on {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--on-accent);
+}
+
+.bookm__day.is-empty {
+  visibility: hidden;
+}
 
 /* --- adım navigasyonu --- */
 .bookm__nav {
@@ -703,10 +761,37 @@
   gap: var(--space-3);
   margin-top: var(--space-5);
 }
+
 .bookm__hint {
   font-size: var(--fs-xs);
   color: var(--text-muted);
   margin: 0;
+}
+
+/* --- Booking modal tipografi: mono yerine arayüz fontu (--font-sans), sade etiketler.
+   Yalnızca .bookm kapsamında; auth (giriş/kayıt) modalı mono etiket stilini korur. --- */
+.bookm .authm__form label,
+.bookm .mk-field__label {
+  font-family: var(--font-sans);
+  font-size: var(--fs-sm);
+  letter-spacing: normal;
+  text-transform: none;
+  font-weight: 500;
+  color: var(--text-muted);
+}
+
+.bookm__slot,
+.bookm__step .n,
+.bookm__cal-head b,
+.bookm__cal-dow,
+.bookm__day {
+  font-family: var(--font-sans);
+}
+
+/* Public Select (Konu) modal alanlarıyla aynı görünsün */
+.bookm .mk-select {
+  padding: .7rem .8rem;
+  border-radius: var(--radius);
 }
 
 .overlay__social {
