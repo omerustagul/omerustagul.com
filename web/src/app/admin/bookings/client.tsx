@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useState, useTransition } from "react";
-import { useRouter } from "next/navigation";
 import { AdmCard, Seg, Switch, MkSelect } from "@/components/admin/ui";
 import { Icon } from "@/components/admin/AdminIcons";
 import { setBookingStatus, deleteBooking, saveBookingConfig } from "@/lib/actions/bookings";
@@ -65,30 +64,42 @@ export function BookingsClient({
           ]}
         />
       </div>
-      {tab === "list" ? <BookingList rows={initialBookings} /> : <WorkingDays config={initialConfig} />}
+      {tab === "list" ? <BookingList initial={initialBookings} /> : <WorkingDays config={initialConfig} />}
     </>
   );
 }
 
-function BookingList({ rows }: { rows: Row[] }) {
-  const router = useRouter();
+function BookingList({ initial }: { initial: Row[] }) {
+  const [rows, setRows] = useState(initial);
   const [pending, start] = useTransition();
+  const [err, setErr] = useState<string | null>(null);
   const now = new Date();
   const upcoming = rows.filter((b) => b.status !== "cancelled" && new Date(b.slot) >= now);
 
   const changeStatus = (id: string, status: string) =>
     start(async () => {
-      await setBookingStatus(id, status);
-      router.refresh();
+      setErr(null);
+      const res = await setBookingStatus(id, status);
+      if (res?.error) {
+        setErr(res.error);
+        return;
+      }
+      setRows((cur) => cur.map((b) => (b.id === id ? { ...b, status } : b)));
     });
   const remove = (id: string) =>
     start(async () => {
-      await deleteBooking(id);
-      router.refresh();
+      setErr(null);
+      const res = await deleteBooking(id);
+      if (res?.error) {
+        setErr(res.error);
+        return;
+      }
+      setRows((cur) => cur.filter((b) => b.id !== id));
     });
 
   return (
     <AdmCard title="Randevular" desc={`${upcoming.length} yaklaşan · ${rows.length} toplam`}>
+      {err && <p style={{ color: "var(--signal-err)", fontSize: 13, padding: "0 1rem" }}>{err}</p>}
       {!rows.length ? (
         <div style={{ padding: "4rem", textAlign: "center", color: "var(--text-muted)" }}>
           <p>Henüz randevu yok.</p>
@@ -131,7 +142,7 @@ function BookingList({ rows }: { rows: Row[] }) {
                       {b.message && <span style={{ fontSize: 12, fontStyle: "italic" }}>{b.message}</span>}
                     </div>
                   </td>
-                  <td style={{ padding: "1rem", minWidth: 140 }}>
+                  <td style={{ padding: "1rem", minWidth: 140, pointerEvents: pending ? "none" : undefined, opacity: pending ? 0.6 : 1 }}>
                     <MkSelect width="140px" value={b.status} onChange={(v: string) => changeStatus(b.id, v)} options={STATUS_OPTS} />
                   </td>
                   <td style={{ padding: "1rem", textAlign: "right" }}>
@@ -150,13 +161,13 @@ function BookingList({ rows }: { rows: Row[] }) {
 }
 
 function WorkingDays({ config }: { config: BookingConfigData }) {
-  const router = useRouter();
   const [pending, start] = useTransition();
   const [weekly, setWeekly] = useState<Record<Weekday, boolean>>(config.weekly);
   const [slots, setSlots] = useState<string[]>(config.slots);
   const [closed, setClosed] = useState<string[]>(config.closedDates);
   const [newDate, setNewDate] = useState("");
   const [saved, setSaved] = useState(false);
+  const [err, setErr] = useState<string | null>(null);
 
   const todayStr = new Date().toISOString().slice(0, 10);
   const toggleSlot = (s: string) =>
@@ -169,10 +180,14 @@ function WorkingDays({ config }: { config: BookingConfigData }) {
 
   const save = () =>
     start(async () => {
-      await saveBookingConfig({ weekly, slots, closedDates: closed });
-      router.refresh();
+      setErr(null);
+      const res = await saveBookingConfig({ weekly, slots, closedDates: closed });
+      if (res?.error) {
+        setErr(res.error);
+        return;
+      }
       setSaved(true);
-      window.setTimeout(() => setSaved(false), 2000);
+      setTimeout(() => setSaved(false), 2000);
     });
 
   const chip = (active: boolean): React.CSSProperties => ({
@@ -235,6 +250,7 @@ function WorkingDays({ config }: { config: BookingConfigData }) {
           {pending ? "Kaydediliyor…" : "Kaydet"}
         </button>
         {saved && <span style={{ color: "var(--accent)", fontSize: 13 }}>Kaydedildi ✓</span>}
+        {err && <span style={{ color: "var(--signal-err)", fontSize: 13 }}>{err}</span>}
       </div>
     </div>
   );
