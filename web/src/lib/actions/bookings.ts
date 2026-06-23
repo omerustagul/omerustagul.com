@@ -6,7 +6,6 @@ import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { clientId, rateLimit } from "@/lib/rate-limit";
 import {
-  DEFAULT_BOOKING_CONFIG,
   normalizeBookingConfig,
   isDayBookable,
   ymd,
@@ -24,7 +23,7 @@ async function requireStaff(): Promise<boolean> {
 /** Randevu uygunluk config'i (yoksa varsayılan). Modal ve admin ortak kullanır. */
 export async function getBookingConfig(): Promise<BookingConfigData> {
   const row = await prisma.bookingConfig.findUnique({ where: { id: 1 } });
-  return row ? normalizeBookingConfig(row.data) : DEFAULT_BOOKING_CONFIG;
+  return row ? normalizeBookingConfig(row.data) : normalizeBookingConfig(null);
 }
 
 /** Çalışma günleri/saatleri + kapalı günleri kaydeder (admin). */

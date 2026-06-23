@@ -169,7 +169,7 @@ export function BookingModal({ onClose }: { onClose: () => void }) {
           </div>
           <h3 className="bookm__title">Görüşmen planlandı</h3>
           <p className="bookm__sub">
-            {done.date} · {done.slot} · {done.type} — onay e-postası gönderilecek.
+            {done.date} · {done.slot} · {done.type} — talebini aldık, en kısa sürede seninle iletişime geçeceğiz.
           </p>
           <button className="btn btn--primary" onClick={onClose} style={{ marginTop: "var(--space-4)" }}>
             Tamam
