@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState, useTransition } from "react";
-import { createBooking, getTakenSlots } from "@/lib/actions/bookings";
+import { createBooking, getDayAvailability } from "@/lib/actions/bookings";
 
 /* Faithful port of the prototype's booking modal (theme/site-chrome.js).
    Wired to the createBooking server action; taken slots are disabled. */
@@ -12,7 +12,7 @@ export function BookingModal({ onClose }: { onClose: () => void }) {
   const minDate = useMemo(() => new Date().toISOString().slice(0, 10), []);
   const [date, setDate] = useState("");
   const [slot, setSlot] = useState<string | null>(null);
-  const [taken, setTaken] = useState<string[]>([]);
+  const [freeSlots, setFreeSlots] = useState<string[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [done, setDone] = useState<{ date: string; slot: string } | null>(null);
   const [pending, start] = useTransition();
@@ -31,8 +31,8 @@ export function BookingModal({ onClose }: { onClose: () => void }) {
   useEffect(() => {
     if (!date) return;
     let live = true;
-    getTakenSlots(date).then((t) => {
-      if (live) setTaken(t);
+    getDayAvailability(date).then((slots: string[]) => {
+      if (live) setFreeSlots(slots);
     });
     return () => {
       live = false;
@@ -119,7 +119,7 @@ export function BookingModal({ onClose }: { onClose: () => void }) {
             </label>
             <div className="bookm__slots">
               {SLOTS.map((s) => {
-                const isTaken = taken.includes(s);
+                const isTaken = !freeSlots.includes(s);
                 return (
                   <button
                     key={s}
