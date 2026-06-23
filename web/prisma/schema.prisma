@@ -239,8 +239,8 @@ model Booking {
   name      String
   email     String
   phone     String?
-  topic     String?
-  type      String?
+  topic     String? // "Marka & ürün" | "Web tasarım" | ...
+  type      String? // "Online" | "Yüz yüze" | "Telefon"
   message   String?
   slot      DateTime
   status    String   @default("pending")
@@ -249,7 +249,7 @@ model Booking {
 
 model BookingConfig {
   id   Int  @id @default(1)
-  data Json
+  data Json // { weekly: Record<0..6, boolean>, slots: string[], closedDates: string[] }
 }
 
 // ------------------------------------------------------- content & settings
