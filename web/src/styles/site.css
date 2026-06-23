@@ -770,8 +770,7 @@
 
 /* --- Booking modal tipografi: mono yerine arayüz fontu (--font-sans), sade etiketler.
    Yalnızca .bookm kapsamında; auth (giriş/kayıt) modalı mono etiket stilini korur. --- */
-.bookm .authm__form label,
-.bookm .mk-field__label {
+.bookm .authm__form label {
   font-family: var(--font-sans);
   font-size: var(--fs-sm);
   letter-spacing: normal;
@@ -788,10 +787,102 @@
   font-family: var(--font-sans);
 }
 
-/* Public Select (Konu) modal alanlarıyla aynı görünsün */
-.bookm .mk-select {
-  padding: .7rem .8rem;
+/* --- Konu: markaya özel açılır seçim (native <select> değil) --- */
+.bookm__field {
+  display: flex;
+  flex-direction: column;
+  gap: .4rem;
+  font-family: var(--font-sans);
+  font-size: var(--fs-sm);
+  font-weight: 500;
+  color: var(--text-muted);
+}
+
+.bookm__sel {
+  position: relative;
+}
+
+.bookm__sel-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: .5rem;
+  font-family: var(--font-sans);
+  font-size: var(--fs-body);
+  font-weight: 400;
+  color: var(--text);
+  background: var(--surface);
+  border: 1px solid var(--border);
   border-radius: var(--radius);
+  padding: .7rem .8rem;
+  cursor: pointer;
+  text-align: left;
+  transition: border-color var(--dur-fast);
+}
+
+.bookm__sel-btn:hover,
+.bookm__sel.open .bookm__sel-btn {
+  border-color: var(--accent);
+}
+
+.bookm__sel-chev {
+  color: var(--text-muted);
+  font-size: 1rem;
+  line-height: 1;
+  transition: transform var(--dur-fast);
+}
+
+.bookm__sel.open .bookm__sel-chev {
+  transform: rotate(180deg);
+}
+
+.bookm__sel-pop {
+  position: absolute;
+  z-index: 20;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 4px;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-pop);
+  max-height: 240px;
+  overflow-y: auto;
+  animation: bookmSelPop .14s var(--ease-out);
+}
+
+@keyframes bookmSelPop {
+  from { opacity: 0; transform: translateY(-4px); }
+  to { opacity: 1; transform: none; }
+}
+
+.bookm__sel-opt {
+  width: 100%;
+  text-align: left;
+  font-family: var(--font-sans);
+  font-size: var(--fs-body);
+  font-weight: 400;
+  color: var(--text);
+  background: none;
+  border: 0;
+  border-radius: var(--radius-sm);
+  padding: .55rem .7rem;
+  cursor: pointer;
+  transition: background var(--dur-fast);
+}
+
+.bookm__sel-opt:hover {
+  background: var(--surface-muted);
+}
+
+.bookm__sel-opt.on {
+  background: var(--accent-tint);
+  font-weight: 500;
 }
 
 .overlay__social {

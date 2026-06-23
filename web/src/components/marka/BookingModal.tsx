@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState, useTransition } from "react";
+import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import { createBooking, getBookingConfig, getDayAvailability } from "@/lib/actions/bookings";
 import {
   DEFAULT_BOOKING_CONFIG,
@@ -9,7 +9,6 @@ import {
   buildMonth,
   type BookingConfigData,
 } from "@/lib/booking-config";
-import { Select } from "@/components/ui";
 
 const TOPICS = ["Marka & ürün", "Web tasarım", "Geliştirme", "Akademi / eğitim", "Diğer"];
 const TYPES = ["Online", "Telefon"];
@@ -18,6 +17,77 @@ const DOW = ["Pzt", "Sal", "Çar", "Per", "Cum", "Cmt", "Paz"];
 const MONTHS = ["Ocak", "Şubat", "Mart", "Nisan", "Mayıs", "Haziran", "Temmuz", "Ağustos", "Eylül", "Ekim", "Kasım", "Aralık"];
 
 const emailOk = (s: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(s);
+
+/** Markaya özel, JS ile render edilen açılır seçim — native <select> değil. */
+function Dropdown({
+  label,
+  value,
+  options,
+  onChange,
+}: {
+  label: string;
+  value: string;
+  options: string[];
+  onChange: (v: string) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    const onDoc = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    };
+    document.addEventListener("mousedown", onDoc);
+    return () => document.removeEventListener("mousedown", onDoc);
+  }, [open]);
+
+  return (
+    <label className="bookm__field">
+      {label}
+      <div
+        className={`bookm__sel ${open ? "open" : ""}`}
+        ref={ref}
+        onKeyDown={(e) => {
+          if (e.key === "Escape" && open) {
+            e.stopPropagation();
+            setOpen(false);
+          }
+        }}
+      >
+        <button
+          type="button"
+          className="bookm__sel-btn"
+          aria-haspopup="listbox"
+          aria-expanded={open}
+          onClick={() => setOpen((o) => !o)}
+        >
+          <span>{value}</span>
+          <span className="bookm__sel-chev" aria-hidden="true">⌄</span>
+        </button>
+        {open && (
+          <div className="bookm__sel-pop" role="listbox">
+            {options.map((o) => (
+              <button
+                key={o}
+                type="button"
+                role="option"
+                aria-selected={o === value}
+                className={`bookm__sel-opt ${o === value ? "on" : ""}`}
+                onClick={() => {
+                  onChange(o);
+                  setOpen(false);
+                }}
+              >
+                {o}
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+    </label>
+  );
+}
 
 export function BookingModal({ onClose }: { onClose: () => void }) {
   const [config, setConfig] = useState<BookingConfigData>(DEFAULT_BOOKING_CONFIG);
@@ -217,11 +287,7 @@ export function BookingModal({ onClose }: { onClose: () => void }) {
 
             {step === 2 && (
               <>
-                <Select label="Konu" value={form.topic} onChange={(e) => set("topic", e.target.value)}>
-                  {TOPICS.map((t) => (
-                    <option key={t}>{t}</option>
-                  ))}
-                </Select>
+                <Dropdown label="Konu" value={form.topic} options={TOPICS} onChange={(v) => set("topic", v)} />
                 <label>
                   Görüşmeyi nasıl tercih edersiniz?
                   <div className="bookm__seg" role="group" aria-label="Görüşmeyi nasıl tercih edersiniz">
