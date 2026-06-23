@@ -238,9 +238,18 @@ model Booking {
   id        String   @id @default(cuid())
   name      String
   email     String
+  phone     String?
+  topic     String?
+  type      String?
+  message   String?
   slot      DateTime
   status    String   @default("pending")
   createdAt DateTime @default(now())
+}
+
+model BookingConfig {
+  id   Int  @id @default(1)
+  data Json
 }
 
 // ------------------------------------------------------- content & settings
