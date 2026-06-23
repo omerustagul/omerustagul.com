@@ -368,10 +368,10 @@
 .authm__box {
   position: relative;
   width: 100%;
-  max-width: 400px;
+  max-width: 600px;
   background: var(--bg);
   border: 1px solid var(--border);
-  border-radius: var(--radius-xl);
+  border-radius: var(--radius-lg);
   padding: var(--space-7);
   box-shadow: var(--shadow-pop);
   animation: authpop .3s var(--ease-out) forwards;
@@ -1651,7 +1651,8 @@
   left: 0;
   right: 0;
   top: 100%;
-  background: var(--bg-elevated);
+  background: color-mix(in srgb, var(--bg) 78%, transparent);
+  -webkit-backdrop-filter: blur(14px);
   border-top: 1px solid var(--border);
   border-bottom: 1px solid var(--border);
   opacity: 0;
