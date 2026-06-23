@@ -54,16 +54,31 @@ export function BookingModal({ onClose }: { onClose: () => void }) {
     };
   }, []);
 
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [onClose]);
+
   // Gün seçilince o günün boş saatlerini çek (senkron sıfırlamalar pickDay'de yapılır).
   useEffect(() => {
     if (!date) return;
     let live = true;
-    getDayAvailability(date).then((a) => {
-      if (live) {
-        setAvail(a);
-        setLoadingSlots(false);
-      }
-    });
+    getDayAvailability(date)
+      .then((a) => {
+        if (live) {
+          setAvail(a);
+          setLoadingSlots(false);
+        }
+      })
+      .catch(() => {
+        if (live) {
+          setAvail([]);
+          setLoadingSlots(false);
+        }
+      });
     return () => {
       live = false;
     };
@@ -88,7 +103,11 @@ export function BookingModal({ onClose }: { onClose: () => void }) {
       return;
     }
     if (step === 2 && !step2Ok) {
-      setError("Telefon görüşmesi için numara gerekli.");
+      setError(
+        form.type === "Telefon" && !form.phone.trim()
+          ? "Telefon görüşmesi için numara gerekli."
+          : "Lütfen konu ve görüşme türü seç."
+      );
       return;
     }
     setStep((s) => Math.min(3, s + 1));
@@ -131,7 +150,7 @@ export function BookingModal({ onClose }: { onClose: () => void }) {
     <div className="authm bookm">
       <div className="authm__scrim" onClick={onClose} />
       {done ? (
-        <div className="authm__box bookm__box" style={{ textAlign: "center" }} role="dialog" aria-modal="true">
+        <div className="authm__box bookm__box" style={{ textAlign: "center" }} role="dialog" aria-modal="true" aria-label="Görüşme planlandı">
           <div
             aria-hidden="true"
             style={{
