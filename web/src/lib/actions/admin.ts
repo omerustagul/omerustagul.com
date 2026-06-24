@@ -178,6 +178,55 @@ export async function deleteProduct(fd: FormData) {
   refreshSite(["/market", "/admin/products"]);
 }
 
+export type ProductData = {
+  status?: string;
+  tagline?: string;
+  currency?: string;
+  priceLabel?: string;
+  license?: string;
+  desc?: string;
+  includes?: { id: string; text: string }[];
+  specs?: { id: string; k: string; v: string }[];
+  gallery?: { id: string; src: string; caption?: string }[];
+  cover?: string;
+};
+export type ProductInput = {
+  id?: string;
+  title: string;
+  price?: number;
+  type?: string | null;
+  format?: string | null;
+  seller?: string | null;
+  data?: ProductData;
+};
+export async function upsertProduct(input: ProductInput): Promise<string> {
+  await requireAdmin();
+  const title = input.title.trim() || "Başlıksız ürün";
+  const common = {
+    title,
+    price: input.price ?? 0,
+    type: input.type?.trim() || null,
+    format: input.format?.trim() || null,
+    seller: input.seller?.trim() || null,
+    data: input.data ?? {},
+  };
+  let id = input.id;
+  if (id) {
+    await prisma.product.update({ where: { id }, data: common });
+  } else {
+    const created = await prisma.product.create({ data: { ...common, slug: slugify(title) } });
+    id = created.id;
+  }
+  const row = await prisma.product.findUnique({ where: { id }, select: { slug: true } });
+  refreshSite(["/market", "/admin/products", row ? `/market/${row.slug}` : "/market"]);
+  return id;
+}
+export async function deleteProductById(id: string): Promise<void> {
+  await requireAdmin();
+  await prisma.product.delete({ where: { id } });
+  refreshSite(["/market", "/admin/products"]);
+}
+
 /* ---------------------------------------------------------------- courses */
 export async function saveCourse(fd: FormData) {
   await requireAdmin();

@@ -46,6 +46,9 @@ model Course {
   level       String? // Başlangıç | Orta | İleri
   topic       String? // Tasarım | Geliştirme | Motion | Strateji
   instructor  String?
+  // Rich course fields: tagline, lang, currency, price label, salePrice, desc,
+  // curriculum (modules[].lessons[]), outcomes[], requirements[], cover, status.
+  data        Json?
   createdAt   DateTime     @default(now())
   modules     Module[]
   enrollments Enrollment[]
@@ -103,6 +106,9 @@ model Product {
   type      String? // UI Kit | Şablon | İkon Seti | Sunum
   format    String? // Figma | React | SVG | Keynote
   seller    String?
+  // Rich product fields: tagline, currency, license, desc, includes[], specs[],
+  // gallery[], cover, status. Mirrors the prototype's product object.
+  data      Json?
   createdAt DateTime   @default(now())
   reviews   Review[]
 }
@@ -196,6 +202,9 @@ model BlogPost {
   readTime    String?
   featured    Boolean   @default(false)
   publishedAt DateTime? // null = draft
+  // Rich/template fields: template id + per-block content (cover, kicker, lead,
+  // body, image, gallery[], qa[], list[], …) + status. Mirrors the prototype.
+  data        Json?
   createdAt   DateTime  @default(now())
 }
 
