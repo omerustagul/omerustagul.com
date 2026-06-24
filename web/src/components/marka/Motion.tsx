@@ -5,21 +5,18 @@ import { usePathname } from "next/navigation";
 
 /* Faithful port of ui_kits/website/motion.js — scroll-reveal, parallax,
    magnetic buttons, custom cursor, count-up stats, sticky header. Honours
-   prefers-reduced-motion. Re-runs on route change. */
+   prefers-reduced-motion. Re-runs on route change.
+
+   Reveal & count-up use an IntersectionObserver (instead of a manual
+   getBoundingClientRect scroll check) so content is revealed reliably at any
+   scroll speed, on anchor/jump scrolls, and for elements already in view on
+   load — the old scroll check could leave sections stuck at opacity:0. */
 export function Motion() {
   const pathname = usePathname();
 
   useEffect(() => {
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    const REVEAL_SEL = ".reveal:not([data-seen]), .reveal-mask:not([data-seen])";
-    let pending: HTMLElement[] = [];
-    let counters: HTMLElement[] = [];
     const cleanups: Array<() => void> = [];
-
-    function inView(el: Element, frac = 0.88) {
-      const r = el.getBoundingClientRect();
-      return r.top < window.innerHeight * frac && r.bottom > 0;
-    }
 
     function runCounter(el: HTMLElement) {
       const target = parseInt(el.getAttribute("data-count") || "0", 10);
@@ -34,39 +31,84 @@ export function Motion() {
       requestAnimationFrame(tick);
     }
 
-    function collect() {
-      const fresh = [...document.querySelectorAll<HTMLElement>(REVEAL_SEL)];
-      fresh.forEach((el) => {
+    /* Scroll-reveal: stagger siblings, then reveal each element as it enters the
+       viewport. `rootMargin` bottom -12% mirrors the prototype's 0.88 threshold
+       (reveal slightly before the element is fully in view). */
+    function reveal() {
+      const els = [
+        ...document.querySelectorAll<HTMLElement>(".reveal:not([data-seen]), .reveal-mask:not([data-seen])"),
+      ];
+      els.forEach((el) => {
         el.setAttribute("data-seen", "");
         const sibs = el.parentElement
-          ? [...el.parentElement.children].filter((c) => c.classList.contains("reveal") || c.classList.contains("reveal-mask"))
+          ? [...el.parentElement.children].filter(
+              (c) => c.classList.contains("reveal") || c.classList.contains("reveal-mask"),
+            )
           : [el];
         const idx = sibs.indexOf(el);
         if (idx > 0 && !el.style.getPropertyValue("--rd")) el.style.setProperty("--rd", `${idx * 80}ms`);
       });
-      if (reduced) fresh.forEach((e) => e.classList.add("is-in"));
-      else pending.push(...fresh);
 
-      const freshC = [...document.querySelectorAll<HTMLElement>("[data-count]:not([data-counted])")];
-      freshC.forEach((c) => c.setAttribute("data-counted", ""));
-      if (!reduced) counters.push(...freshC);
+      if (reduced) {
+        els.forEach((el) => el.classList.add("is-in"));
+        return;
+      }
+      const io = new IntersectionObserver(
+        (entries) => {
+          for (const en of entries) {
+            if (en.isIntersecting) {
+              en.target.classList.add("is-in");
+              io.unobserve(en.target);
+            }
+          }
+        },
+        { rootMargin: "0px 0px -12% 0px", threshold: 0.01 },
+      );
+      els.forEach((el) => io.observe(el));
+      cleanups.push(() => io.disconnect());
+
+      // Safety net: instant jumps (anchor links, End key, back/forward scroll
+      // restoration) can move an element from below to above the viewport without
+      // the observer ever seeing it intersect. Reveal anything already scrolled
+      // past so content is never left stuck at opacity:0.
+      let raf = 0;
+      const catchUp = () => {
+        raf = 0;
+        for (const el of els) {
+          if (el.classList.contains("is-in")) continue;
+          if (el.getBoundingClientRect().bottom <= 0) {
+            el.classList.add("is-in");
+            io.unobserve(el);
+          }
+        }
+      };
+      const onScroll = () => {
+        if (!raf) raf = requestAnimationFrame(catchUp);
+      };
+      window.addEventListener("scroll", onScroll, { passive: true });
+      cleanups.push(() => {
+        window.removeEventListener("scroll", onScroll);
+        if (raf) cancelAnimationFrame(raf);
+      });
     }
 
-    function check() {
-      pending = pending.filter((el) => {
-        if (inView(el)) {
-          el.classList.add("is-in");
-          return false;
-        }
-        return true;
-      });
-      counters = counters.filter((el) => {
-        if (inView(el, 0.7)) {
-          runCounter(el);
-          return false;
-        }
-        return true;
-      });
+    function counters() {
+      const els = [...document.querySelectorAll<HTMLElement>("[data-count]:not([data-counted])")];
+      els.forEach((c) => c.setAttribute("data-counted", ""));
+      if (reduced) return;
+      const io = new IntersectionObserver(
+        (entries) => {
+          for (const en of entries) {
+            if (en.isIntersecting) {
+              runCounter(en.target as HTMLElement);
+              io.unobserve(en.target);
+            }
+          }
+        },
+        { threshold: 0.6 },
+      );
+      els.forEach((c) => io.observe(c));
+      cleanups.push(() => io.disconnect());
     }
 
     function header() {
@@ -164,14 +206,10 @@ export function Motion() {
 
     header();
     parallax();
-    collect();
-    check();
+    reveal();
+    counters();
     cursor();
     magnetic();
-    window.addEventListener("scroll", check, { passive: true });
-    window.addEventListener("resize", check, { passive: true });
-    cleanups.push(() => window.removeEventListener("scroll", check));
-    cleanups.push(() => window.removeEventListener("resize", check));
 
     return () => {
       cleanups.forEach((fn) => fn());
