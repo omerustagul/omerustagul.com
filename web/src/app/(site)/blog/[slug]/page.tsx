@@ -7,6 +7,84 @@ import { Prose } from "@/components/marka/Prose";
 
 export const dynamic = "force-dynamic";
 
+// Body block order per template (header renders cover/kicker/title/lead separately).
+const BODY_BLOCKS: Record<string, [string, string][]> = {
+  standart: [["body", "rich"], ["image", "image"], ["body2", "rich"]],
+  foto: [["gallery", "gallery"], ["body", "rich"]],
+  roportaj: [["qa", "qa"]],
+  rehber: [["list", "list"]],
+  minimal: [["body", "rich"]],
+};
+
+function renderRichText(text: string) {
+  return text
+    .split(/\n{2,}/)
+    .map((para, i) => {
+      const t = para.trim();
+      if (!t) return null;
+      if (/^#{1,2}\s+/.test(t)) return <h2 key={i}>{t.replace(/^#{1,2}\s+/, "")}</h2>;
+      return <p key={i}>{t}</p>;
+    })
+    .filter(Boolean);
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function Block({ type, value }: { type: string; value: any }) {
+  if (type === "rich") return value ? <div className="prose">{renderRichText(String(value))}</div> : null;
+  if (type === "image")
+    return value ? (
+      <figure className="article__cover reveal">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src={value} alt="" style={{ width: "100%", borderRadius: "var(--radius)" }} />
+      </figure>
+    ) : null;
+  if (type === "gallery")
+    return value?.length ? (
+      <div className="pv__gal reveal">
+        {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+        {value.map((g: any) => (
+          <figure key={g.id}>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={g.src} alt={g.caption || ""} />
+            {g.caption && <figcaption>{g.caption}</figcaption>}
+          </figure>
+        ))}
+      </div>
+    ) : null;
+  if (type === "qa")
+    return value?.length ? (
+      <div className="article__qa reveal" style={{ display: "flex", flexDirection: "column", gap: "1.4rem" }}>
+        {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+        {value.map((x: any) => (
+          <div className="pv__qa" key={x.id}>
+            <h3 className="q">{x.q}</h3>
+            <p className="a">{x.a}</p>
+          </div>
+        ))}
+      </div>
+    ) : null;
+  if (type === "list")
+    return value?.length ? (
+      <div className="article__steps reveal" style={{ display: "flex", flexDirection: "column", gap: "1.6rem" }}>
+        {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+        {value.map((x: any, i: number) => (
+          <div className="pv__step" key={x.id} style={{ display: "flex", gap: "1rem" }}>
+            <span className="n" style={{ fontFamily: "var(--font-mono)", color: "var(--accent-hover)" }}>{String(i + 1).padStart(2, "0")}</span>
+            <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: ".5rem" }}>
+              <h3 style={{ margin: 0 }}>{x.h}</h3>
+              {x.text && <p style={{ margin: 0 }}>{x.text}</p>}
+              {x.img && (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={x.img} alt="" style={{ width: "100%", borderRadius: "var(--radius)" }} />
+              )}
+            </div>
+          </div>
+        ))}
+      </div>
+    ) : null;
+  return null;
+}
+
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   const post = await prisma.blogPost.findUnique({ where: { slug } });
@@ -26,7 +104,12 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
     take: 3,
   });
 
-  const body = post.body || "Bu yazının tam metni yakında. Editöryel içerik admin panelinden yönetilir.";
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const data = post.data as any;
+  const template: string | null = data?.template ?? null;
+  const fields = data?.fields ?? {};
+  const bodyBlocks = template ? BODY_BLOCKS[template] : null;
+  const cover = fields.cover || post.image;
 
   return (
     <>
@@ -59,12 +142,27 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
             </div>
           </header>
           <div className="article__cover reveal">
-            <div className="ph" style={{ aspectRatio: "21/9" }}>
-              <div className="ph__in" />
-              <span className="ph__tag">KAPAK GÖRSELİ</span>
-            </div>
+            {cover ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={cover} alt={post.title} style={{ width: "100%", borderRadius: "var(--radius)" }} />
+            ) : (
+              <div className="ph" style={{ aspectRatio: "21/9" }}>
+                <div className="ph__in" />
+                <span className="ph__tag">KAPAK GÖRSELİ</span>
+              </div>
+            )}
           </div>
-          <Prose body={body} />
+
+          {bodyBlocks ? (
+            <div className="article__body reveal" style={{ display: "flex", flexDirection: "column", gap: "1.6rem" }}>
+              {bodyBlocks.map(([key, type]) => (
+                <Block key={key} type={type} value={fields[key]} />
+              ))}
+            </div>
+          ) : (
+            <Prose body={post.body || "Bu yazının tam metni yakında. Editöryel içerik admin panelinden yönetilir."} />
+          )}
+
           {post.category && (
             <div className="article__tags reveal">
               <span className="chip">{post.category}</span>

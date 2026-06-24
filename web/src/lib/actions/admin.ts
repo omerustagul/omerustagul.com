@@ -154,6 +154,56 @@ export async function deleteBlogPost(fd: FormData) {
   refreshSite(["/blog", "/admin/blog"]);
 }
 
+// JSON-compatible value (assignable to Prisma's Json input).
+type Jsonish = string | number | boolean | null | Jsonish[] | { [k: string]: Jsonish | undefined };
+export type BlogData = {
+  template?: string | null;
+  status?: string;
+  fields?: { [k: string]: Jsonish };
+};
+export type BlogInput = {
+  id?: string;
+  title: string;
+  excerpt?: string | null;
+  body?: string | null;
+  category?: string | null;
+  image?: string | null;
+  readTime?: string | null;
+  published?: boolean;
+  data?: BlogData;
+};
+export async function upsertBlogPost(input: BlogInput): Promise<string> {
+  await requireAdmin();
+  const title = input.title.trim() || "Başlıksız yazı";
+  const common = {
+    title,
+    excerpt: input.excerpt?.trim() || null,
+    body: input.body ?? null,
+    category: input.category?.trim() || null,
+    image: input.image || null,
+    readTime: input.readTime?.trim() || null,
+    data: input.data ?? {},
+  };
+  let id = input.id;
+  let publishedAt: Date | null = input.published ? new Date() : null;
+  if (id) {
+    const existing = await prisma.blogPost.findUnique({ where: { id } });
+    if (input.published && existing?.publishedAt) publishedAt = existing.publishedAt; // keep original date
+    await prisma.blogPost.update({ where: { id }, data: { ...common, publishedAt } });
+  } else {
+    const created = await prisma.blogPost.create({ data: { ...common, slug: slugify(title), publishedAt } });
+    id = created.id;
+  }
+  const row = await prisma.blogPost.findUnique({ where: { id }, select: { slug: true } });
+  refreshSite(["/blog", "/admin/blog", row ? `/blog/${row.slug}` : "/blog"]);
+  return id;
+}
+export async function deleteBlogPostById(id: string): Promise<void> {
+  await requireAdmin();
+  await prisma.blogPost.delete({ where: { id } });
+  refreshSite(["/blog", "/admin/blog"]);
+}
+
 /* --------------------------------------------------------------- products */
 export async function saveProduct(fd: FormData) {
   await requireAdmin();
