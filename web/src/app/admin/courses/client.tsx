@@ -1,10 +1,26 @@
 "use client";
 
 import React, { useState } from "react";
+import { useRouter } from "next/navigation";
 import { AdmCard, Field, ImageUpload, FileDrop, Switch, MkSelect, Badge } from "@/components/admin/ui";
 import { Icon } from "@/components/admin/AdminIcons";
+import { upsertCourse2, deleteCourseById, type CourseInput } from "@/lib/actions/admin";
 
-// --- MOCK DATA ---
+type DbLesson = { id: string; title: string; kind: string; content: string | null; order: number };
+type DbModule = { id: string; title: string; order: number; lessons: DbLesson[] };
+type DbCourse = {
+  id: string;
+  title: string;
+  slug: string;
+  price: number;
+  level: string | null;
+  topic: string | null;
+  instructor: string | null;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  data: any;
+  modules: DbModule[];
+};
+
 const LEVELS = ["Başlangıç", "Orta", "İleri", "Tüm seviyeler"];
 const CO_CATS = ["Tasarım", "Geliştirme", "Markalaşma", "Motion", "Strateji"];
 
@@ -16,11 +32,6 @@ const LESSON_TYPES = [
   { id: "text", label: "Metin / okuma", icon: "courses" },
 ];
 const lessonTypeMeta = (id: string) => LESSON_TYPES.find(t => t.id === id) || LESSON_TYPES[0];
-
-const MOCK_COURSES = [
-  { id: 1, title: "Sıfırdan Tasarım Sistemi", instructor: "Ahmet", category: "Tasarım", status: "Yayında", price: "₺1299", rating: 4.8 },
-  { id: 2, title: "İleri Seviye Next.js", instructor: "Mehmet", category: "Geliştirme", status: "Taslak", price: "₺1899", rating: 0 },
-];
 
 // --- UTILS ---
 function uid() { return "x" + Math.random().toString(36).slice(2, 9); }
@@ -35,6 +46,7 @@ function renderRich(text: string) {
   });
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function FormSection({ title, hint, children }: any) {
   return (
     <div className="ed-section">
@@ -48,9 +60,10 @@ function FormSection({ title, hint, children }: any) {
 }
 
 // --- COMPONENTS ---
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function LessonContent({ lesson, onChange }: any) {
   const t = lesson.type || "video";
-  const set = (k: string, v: any) => onChange({ ...lesson, [k]: v });
+  const set = (k: string, v: any) => onChange({ ...lesson, [k]: v }); // eslint-disable-line @typescript-eslint/no-explicit-any
   return (
     <div className="lesson-body">
       <Field label="İçerik türü">
@@ -97,18 +110,20 @@ function LessonContent({ lesson, onChange }: any) {
   );
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function Curriculum({ modules = [], onChange }: any) {
-  const [open, setOpen] = useState<any>({});
-  const toggle = (id: string) => setOpen((o: any) => ({ ...o, [id]: !o[id] }));
-  const setMod = (id: string, k: string, v: any) => onChange(modules.map((m: any) => m.id === id ? { ...m, [k]: v } : m));
+  const [open, setOpen] = useState<any>({}); // eslint-disable-line @typescript-eslint/no-explicit-any
+  const toggle = (id: string) => setOpen((o: any) => ({ ...o, [id]: !o[id] })); // eslint-disable-line @typescript-eslint/no-explicit-any
+  const setMod = (id: string, k: string, v: any) => onChange(modules.map((m: any) => m.id === id ? { ...m, [k]: v } : m)); // eslint-disable-line @typescript-eslint/no-explicit-any
   const addMod = () => onChange([...modules, { id: uid(), title: "", lessons: [] }]);
-  const delMod = (id: string) => onChange(modules.filter((m: any) => m.id !== id));
-  const addLesson = (mid: string) => { const nid = uid(); onChange(modules.map((m: any) => m.id === mid ? { ...m, lessons: [...m.lessons, { id: nid, title: "", dur: "", type: "video" }] } : m)); setOpen((o: any) => ({ ...o, [nid]: true })); };
-  const updLesson = (mid: string, lesson: any) => onChange(modules.map((m: any) => m.id === mid ? { ...m, lessons: m.lessons.map((l: any) => l.id === lesson.id ? lesson : l) } : m));
-  const delLesson = (mid: string, lid: string) => onChange(modules.map((m: any) => m.id === mid ? { ...m, lessons: m.lessons.filter((l: any) => l.id !== lid) } : m));
-  
+  const delMod = (id: string) => onChange(modules.filter((m: any) => m.id !== id)); // eslint-disable-line @typescript-eslint/no-explicit-any
+  const addLesson = (mid: string) => { const nid = uid(); onChange(modules.map((m: any) => m.id === mid ? { ...m, lessons: [...m.lessons, { id: nid, title: "", dur: "", type: "video" }] } : m)); setOpen((o: any) => ({ ...o, [nid]: true })); }; // eslint-disable-line @typescript-eslint/no-explicit-any
+  const updLesson = (mid: string, lesson: any) => onChange(modules.map((m: any) => m.id === mid ? { ...m, lessons: m.lessons.map((l: any) => l.id === lesson.id ? lesson : l) } : m)); // eslint-disable-line @typescript-eslint/no-explicit-any
+  const delLesson = (mid: string, lid: string) => onChange(modules.map((m: any) => m.id === mid ? { ...m, lessons: m.lessons.filter((l: any) => l.id !== lid) } : m)); // eslint-disable-line @typescript-eslint/no-explicit-any
+
   return (
     <div className="curr">
+      {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
       {modules.map((m: any, i: number) => (
         <div key={m.id} className="curr-mod">
           <div className="curr-mod__h">
@@ -118,6 +133,7 @@ function Curriculum({ modules = [], onChange }: any) {
             <button className="adm-iconbtn" onClick={() => delMod(m.id)} aria-label="Modülü sil"><Icon name="trash" size={14} /></button>
           </div>
           <div className="curr-lessons">
+            {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
             {m.lessons.map((l: any) => {
               const meta = lessonTypeMeta(l.type);
               const isOpen = !!open[l.id];
@@ -143,12 +159,14 @@ function Curriculum({ modules = [], onChange }: any) {
   );
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function BulletList({ items = [], onChange, placeholder }: any) {
-  const set = (id: string, v: string) => onChange(items.map((it: any) => it.id === id ? { ...it, text: v } : it));
+  const set = (id: string, v: string) => onChange(items.map((it: any) => it.id === id ? { ...it, text: v } : it)); // eslint-disable-line @typescript-eslint/no-explicit-any
   const add = () => onChange([...items, { id: uid(), text: "" }]);
-  const del = (id: string) => onChange(items.filter((it: any) => it.id !== id));
+  const del = (id: string) => onChange(items.filter((it: any) => it.id !== id)); // eslint-disable-line @typescript-eslint/no-explicit-any
   return (
     <div className="blist">
+      {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
       {items.map((it: any) => (
         <div key={it.id} className="blist__row">
           <span className="blist__dot" />
@@ -161,19 +179,50 @@ function BulletList({ items = [], onChange, placeholder }: any) {
   );
 }
 
-function CourseEditor({ course, onClose, onSave }: any) {
-  const init = course && course.fields ? course : {
-    id: course && course.id,
-    status: (course && course.status) || "Taslak",
-    fields: course ? { title: course.title, instructor: course.instructor, price: course.price, rating: course.rating, category: course.category } : { level: "Başlangıç", currency: "₺" },
+function CourseEditor({
+  course,
+  onClose,
+  onSave,
+}: {
+  course: DbCourse | null;
+  onClose: () => void;
+  onSave: (input: CourseInput) => Promise<void>;
+}) {
+  const rich = (course && course.data) || {};
+  const modulesFromTables = (course?.modules || []).map((m) => ({
+    id: m.id,
+    title: m.title,
+    lessons: m.lessons.map((l) => ({ id: l.id, title: l.title, dur: "", type: l.kind, content: l.content || "" })),
+  }));
+  const init = {
+    id: course?.id,
+    status: rich.status || "Taslak",
+    fields: {
+      title: course?.title || "",
+      instructor: course?.instructor || "",
+      category: course?.topic || rich.category || "",
+      level: course?.level || "Başlangıç",
+      price: course ? String(course.price || "") : "",
+      currency: rich.currency || "₺",
+      tagline: rich.tagline || "",
+      lang: rich.lang || "Türkçe",
+      salePrice: rich.salePrice || "",
+      desc: rich.desc || "",
+      cover: rich.cover || "",
+      rating: rich.rating || 0,
+      modules: rich.modules || modulesFromTables,
+      outcomes: rich.outcomes || [],
+      requirements: rich.requirements || [],
+    },
   };
-  const [data, setData] = useState<any>(init);
+  const [data, setData] = useState<any>(init); // eslint-disable-line @typescript-eslint/no-explicit-any
   const [aiBusy, setAiBusy] = useState(false);
+  const [saving, setSaving] = useState(false);
   const f = data.fields;
-  const update = (k: string, v: any) => setData((d: any) => ({ ...d, fields: { ...d.fields, [k]: v } }));
+  const update = (k: string, v: any) => setData((d: any) => ({ ...d, fields: { ...d.fields, [k]: v } })); // eslint-disable-line @typescript-eslint/no-explicit-any
 
   const modules = f.modules || [];
-  const lessonCount = modules.reduce((n: number, m: any) => n + m.lessons.length, 0);
+  const lessonCount = modules.reduce((n: number, m: any) => n + m.lessons.length, 0); // eslint-disable-line @typescript-eslint/no-explicit-any
 
   const aiWrite = async () => {
     setAiBusy(true);
@@ -182,14 +231,36 @@ function CourseEditor({ course, onClose, onSave }: any) {
     setAiBusy(false);
   };
 
-  const save = (status: string) => {
-    onSave({
-      id: data.id, status, fields: f,
-      title: f.title || "Başlıksız kurs", instructor: f.instructor || "—", category: f.category || "Genel",
-      students: course && course.students ? course.students : 0,
-      price: (f.price ? (f.currency || "₺") + f.price : "—"),
-      rating: f.rating || 0, cover: f.cover || null,
-    });
+  const save = async (status: string) => {
+    if (saving) return;
+    setSaving(true);
+    try {
+      await onSave({
+        id: data.id,
+        title: f.title || "Başlıksız kurs",
+        price: parseInt(String(f.price).replace(/[^\d]/g, ""), 10) || 0,
+        level: f.level || null,
+        topic: f.category || null,
+        instructor: f.instructor || null,
+        data: {
+          status,
+          tagline: f.tagline || "",
+          lang: f.lang || "",
+          currency: f.currency || "₺",
+          priceLabel: f.price ? (f.currency || "₺") + f.price : "",
+          salePrice: f.salePrice || "",
+          desc: f.desc || "",
+          cover: f.cover || "",
+          rating: f.rating || 0,
+          category: f.category || "",
+          outcomes: f.outcomes || [],
+          requirements: f.requirements || [],
+          modules: f.modules || [],
+        },
+      });
+    } finally {
+      setSaving(false);
+    }
   };
 
   return (
@@ -198,9 +269,10 @@ function CourseEditor({ course, onClose, onSave }: any) {
         <button className="ed-back" onClick={onClose}><Icon name="close" size={14} /> Kurslara dön</button>
         <span className="adm-badge adm-badge--green">Kurs düzenleyici</span>
         <span className="sp" style={{ flex: 1 }} />
+        {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
         <MkSelect width="150px" value={data.status} onChange={v => setData((d: any) => ({ ...d, status: v }))} options={["Taslak", "Arşiv", "Yayında"]} />
-        <button className="adm-btn adm-btn--ghost" onClick={() => save("Taslak")}>Taslağa kaydet</button>
-        <button className="adm-btn adm-btn--primary" onClick={() => save("Yayında")}><Icon name="eye" size={15} /> Yayınla</button>
+        <button className="adm-btn adm-btn--ghost" disabled={saving} onClick={() => save(data.status === "Yayında" ? "Yayında" : "Taslak")}>Taslağa kaydet</button>
+        <button className="adm-btn adm-btn--primary" disabled={saving} onClick={() => save("Yayında")}><Icon name="eye" size={15} /> {saving ? "Kaydediliyor…" : "Yayınla"}</button>
       </div>
 
       <div className="editor">
@@ -237,14 +309,17 @@ function CourseEditor({ course, onClose, onSave }: any) {
           </FormSection>
 
           <FormSection title="Müfredat" hint={`${modules.length} modül · ${lessonCount} ders`}>
+            {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
             <Curriculum modules={modules} onChange={(v: any) => update("modules", v)} />
           </FormSection>
 
           <FormSection title="Kazanımlar" hint="kursu bitirince neler yapabilecekler?">
+            {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
             <BulletList items={f.outcomes || []} onChange={(v: any) => update("outcomes", v)} placeholder="örn. Sıfırdan bir tasarım sistemi kurmak" />
           </FormSection>
 
           <FormSection title="Gereksinimler">
+            {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
             <BulletList items={f.requirements || []} onChange={(v: any) => update("requirements", v)} placeholder="örn. Temel Figma bilgisi" />
           </FormSection>
         </div>
@@ -262,11 +337,11 @@ function CourseEditor({ course, onClose, onSave }: any) {
                 {f.category && <span className="kicker">{f.category}{f.level ? ` · ${f.level}` : ""}</span>}
                 <h1>{f.title || "Kurs adı"}</h1>
                 {f.tagline && <p className="lead">{f.tagline}</p>}
-                
+
                 <div className="pv__cover">
                   {f.cover ? <img src={f.cover} alt="" /> : <div className="pv__placeholder">KURS KAPAĞI</div>}
                 </div>
-                
+
                 <div className="pv-course__bar">
                   <div className="pv-course__price">
                     {f.salePrice ? (
@@ -290,10 +365,12 @@ function CourseEditor({ course, onClose, onSave }: any) {
 
                 {f.desc && <div style={{ display: "flex", flexDirection: "column", gap: ".9rem" }}>{renderRich(f.desc)}</div>}
 
+                {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
                 {(f.outcomes || []).filter((o: any) => o.text).length > 0 && (
                   <div className="pv__block">
                     <span className="kicker">Kazanımlar</span>
                     <ul className="pv-checklist">
+                      {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
                       {f.outcomes.filter((o: any) => o.text).map((o: any) => (
                         <li key={o.id}>
                           <span className="ck">✓</span>
@@ -308,24 +385,26 @@ function CourseEditor({ course, onClose, onSave }: any) {
                   <div className="pv__block">
                     <span className="kicker">Müfredat</span>
                     <div className="pv-curr">
+                      {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
                       {modules.map((m: any, i: number) => (
                         <details key={m.id} className="pv-curr__mod" open={i === 0}>
                           <summary style={{ display: "flex", justifyContent: "space-between", listStyle: "none" }}>
                             <span>{String(i + 1).padStart(2, "0")} · {m.title || "Modül"}</span>
                             <span className="c">{m.lessons.length} ders</span>
                           </summary>
-                          {m.lessons.map((l: any) => { 
-                            const lm = lessonTypeMeta(l.type); 
+                          {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+                          {m.lessons.map((l: any) => {
+                            const lm = lessonTypeMeta(l.type);
                             return (
                               <div key={l.id} className="pv-curr__lesson">
                                 <span>
-                                  <span className="ic"><Icon name={lm.icon} size={12} /></span> 
+                                  <span className="ic"><Icon name={lm.icon} size={12} /></span>
                                   {l.title || "Ders"}
                                   {l.free && <span className="pv-free">ücretsiz</span>}
                                 </span>
                                 <span className="d">{l.dur}</span>
                               </div>
-                            ); 
+                            );
                           })}
                         </details>
                       ))}
@@ -333,10 +412,12 @@ function CourseEditor({ course, onClose, onSave }: any) {
                   </div>
                 )}
 
+                {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
                 {(f.requirements || []).filter((r: any) => r.text).length > 0 && (
                   <div className="pv__block">
                     <span className="kicker">Gereksinimler</span>
                     <ul className="pv-checklist pv-checklist--plain">
+                      {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
                       {f.requirements.filter((r: any) => r.text).map((r: any) => (
                         <li key={r.id}>
                           <span className="ck">—</span>
@@ -356,33 +437,38 @@ function CourseEditor({ course, onClose, onSave }: any) {
 }
 
 // --- PAGE LIST ---
-export function CoursesClient() {
-  const [courses, setCourses] = useState<any[]>(MOCK_COURSES);
-  const [editing, setEditing] = useState<any>(null);
+export function CoursesClient({ initial }: { initial: DbCourse[] }) {
+  const router = useRouter();
+  const [editing, setEditing] = useState<DbCourse | "new" | null>(null);
+
+  const handleSave = async (input: CourseInput) => {
+    await upsertCourse2(input);
+    setEditing(null);
+    router.refresh();
+  };
+
+  const handleDelete = async (id: string) => {
+    if (!confirm("Bu kurs silinsin mi? Bu işlem geri alınamaz.")) return;
+    await deleteCourseById(id);
+    router.refresh();
+  };
 
   if (editing) {
     return (
-      <CourseEditor 
-        course={editing} 
-        onClose={() => setEditing(null)} 
-        onSave={(p: any) => { 
-          if (courses.find(x => x.id === p.id)) {
-            setCourses(courses.map(x => x.id === p.id ? p : x));
-          } else {
-            setCourses([{ id: Date.now(), ...p }, ...courses]);
-          }
-          setEditing(null); 
-        }} 
+      <CourseEditor
+        course={editing === "new" ? null : editing}
+        onClose={() => setEditing(null)}
+        onSave={handleSave}
       />
     );
   }
 
   return (
-    <AdmCard 
-      title="Akademi & Kurslar" 
-      desc={`${courses.length} kurs`}
+    <AdmCard
+      title="Akademi & Kurslar"
+      desc={`${initial.length} kurs`}
       action={
-        <button className="adm-btn adm-btn--primary" onClick={() => setEditing({ id: Date.now() })}>
+        <button className="adm-btn adm-btn--primary" onClick={() => setEditing("new")}>
           <Icon name="plus" size={14} /> Kurs Ekle
         </button>
       }
@@ -400,30 +486,35 @@ export function CoursesClient() {
           </tr>
         </thead>
         <tbody>
-          {courses.map(c => (
-            <tr key={c.id}>
-              <td style={{ width: 56 }}>
-                <div className="ph" style={{ width: 48, height: 32, borderRadius: 6 }}>
-                  {c.cover ? <img src={c.cover} alt="" style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: 6 }} /> : <div className="ph__in" />}
-                </div>
-              </td>
-              <td className="ti">{c.title}</td>
-              <td style={{ color: "var(--text-muted)", fontSize: "13px" }}>{c.category}</td>
-              <td style={{ color: "var(--text-muted)", fontSize: "13px" }}>{c.instructor}</td>
-              <td style={{ color: "var(--text-muted)", fontSize: "13px", fontFamily: "var(--font-mono)" }}>{c.price}</td>
-              <td><Badge tone={c.status === "Yayında" ? "green" : "muted"}>{c.status}</Badge></td>
-              <td>
-                <div className="adm-row-actions">
-                  <button className="adm-iconbtn" onClick={() => setEditing(c)} aria-label="Düzenle">
-                    <Icon name="edit" size={14} />
-                  </button>
-                  <button className="adm-iconbtn" onClick={() => setCourses(courses.filter(x => x.id !== c.id))} aria-label="Sil">
-                    <Icon name="trash" size={14} />
-                  </button>
-                </div>
-              </td>
-            </tr>
-          ))}
+          {initial.map(c => {
+            const status: string = c.data?.status || "Yayında";
+            const priceLabel = c.data?.priceLabel || (c.price ? "₺" + c.price : "—");
+            const cover = c.data?.cover;
+            return (
+              <tr key={c.id}>
+                <td style={{ width: 56 }}>
+                  <div className="ph" style={{ width: 48, height: 32, borderRadius: 6 }}>
+                    {cover ? <img src={cover} alt="" style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: 6 }} /> : <div className="ph__in" />}
+                  </div>
+                </td>
+                <td className="ti">{c.title}</td>
+                <td style={{ color: "var(--text-muted)", fontSize: "13px" }}>{c.topic || "—"}</td>
+                <td style={{ color: "var(--text-muted)", fontSize: "13px" }}>{c.instructor || "—"}</td>
+                <td style={{ color: "var(--text-muted)", fontSize: "13px", fontFamily: "var(--font-mono)" }}>{priceLabel}</td>
+                <td><Badge tone={status === "Yayında" ? "green" : "muted"}>{status}</Badge></td>
+                <td>
+                  <div className="adm-row-actions">
+                    <button className="adm-iconbtn" onClick={() => setEditing(c)} aria-label="Düzenle">
+                      <Icon name="edit" size={14} />
+                    </button>
+                    <button className="adm-iconbtn" onClick={() => handleDelete(c.id)} aria-label="Sil">
+                      <Icon name="trash" size={14} />
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            );
+          })}
         </tbody>
       </table>
     </AdmCard>

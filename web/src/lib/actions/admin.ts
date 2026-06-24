@@ -301,6 +301,78 @@ export async function deleteCourse(fd: FormData) {
   refreshSite(["/academy", "/admin/courses"]);
 }
 
+export type CourseLesson = {
+  id: string; title: string; dur?: string; type?: string; free?: boolean;
+  videoUrl?: string; url?: string; body?: string; img?: string; file?: string;
+  poster?: string; note?: string; vsource?: string; linkLabel?: string; content?: string;
+};
+export type CourseModule = { id: string; title: string; lessons: CourseLesson[] };
+export type CourseData = {
+  status?: string; tagline?: string; lang?: string; currency?: string; priceLabel?: string;
+  salePrice?: string; desc?: string; cover?: string; rating?: number; category?: string;
+  outcomes?: { id: string; text: string }[];
+  requirements?: { id: string; text: string }[];
+  modules?: CourseModule[];
+};
+export type CourseInput = {
+  id?: string;
+  title: string;
+  price?: number;
+  level?: string | null;
+  topic?: string | null;
+  instructor?: string | null;
+  data?: CourseData;
+};
+
+/** Upserts a course (columns + rich `data`) AND mirrors the curriculum into the
+    Module/Lesson tables so the public course player + progress keep working.
+    Note: editing the curriculum replaces modules/lessons (and thus any lesson
+    progress) — acceptable for content management, matching the prototype. */
+export async function upsertCourse2(input: CourseInput): Promise<string> {
+  await requireAdmin();
+  const title = input.title.trim() || "Başlıksız kurs";
+  const common = {
+    title,
+    price: input.price ?? 0,
+    level: input.level?.trim() || null,
+    topic: input.topic?.trim() || null,
+    instructor: input.instructor?.trim() || null,
+    data: input.data ?? {},
+  };
+  let id = input.id;
+  if (id) {
+    await prisma.course.update({ where: { id }, data: common });
+  } else {
+    const created = await prisma.course.create({ data: { ...common, slug: slugify(title) } });
+    id = created.id;
+  }
+  const courseId = id;
+  const mods = input.data?.modules || [];
+  await prisma.$transaction(async (tx) => {
+    await tx.module.deleteMany({ where: { courseId } }); // cascade removes lessons
+    for (let mi = 0; mi < mods.length; mi++) {
+      const m = mods[mi];
+      const cm = await tx.module.create({ data: { courseId, title: m.title || `Modül ${mi + 1}`, order: mi } });
+      const lessons = m.lessons || [];
+      for (let li = 0; li < lessons.length; li++) {
+        const l = lessons[li];
+        const content = l.videoUrl || l.url || l.body || l.img || l.file || l.content || null;
+        await tx.lesson.create({
+          data: { moduleId: cm.id, title: l.title || `Ders ${li + 1}`, kind: l.type || "video", content, order: li },
+        });
+      }
+    }
+  });
+  const row = await prisma.course.findUnique({ where: { id: courseId }, select: { slug: true } });
+  refreshSite(["/academy", "/admin/courses", row ? `/academy/${row.slug}` : "/academy"]);
+  return courseId;
+}
+export async function deleteCourseById(id: string): Promise<void> {
+  await requireAdmin();
+  await prisma.course.delete({ where: { id } });
+  refreshSite(["/academy", "/admin/courses"]);
+}
+
 /* --------------------------------------------------------------- services */
 export async function saveService(fd: FormData) {
   await requireAdmin();
