@@ -177,6 +177,10 @@ model Project {
   image     String?
   featured  Boolean       @default(false)
   order     Int           @default(0)
+  // Rich case-study content the list/query columns don't cover: year, services,
+  // duration, role, problem, solution, body, metrics[], quote{author,role},
+  // gallery[], next, status. Mirrors the prototype's localStorage project object.
+  data      Json?
   createdAt DateTime      @default(now())
   votes     ProjectVote[]
 }

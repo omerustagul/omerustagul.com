@@ -56,6 +56,70 @@ export async function deleteProject(fd: FormData) {
   refreshSite(["/projects", "/admin/projects"]);
 }
 
+// Rich case-study payload stored in Project.data (JSON). All fields are
+// JSON-compatible so the typed object satisfies Prisma's Json input directly.
+export type ProjectMetric = { id: string; label: string; before: string; after: string };
+export type ProjectGalleryItem = { id: string; src: string; caption?: string };
+export type ProjectData = {
+  status?: string;
+  year?: string;
+  serviceIds?: string[];
+  serviceNames?: string[];
+  duration?: string;
+  role?: string;
+  problem?: string;
+  solution?: string;
+  body?: string;
+  metrics?: ProjectMetric[];
+  quote?: string;
+  quoteAuthor?: string;
+  quoteRole?: string;
+  gallery?: ProjectGalleryItem[];
+  next?: string;
+};
+
+export type ProjectInput = {
+  id?: string;
+  title: string;
+  client?: string | null;
+  category?: string | null;
+  image?: string | null;
+  data?: ProjectData;
+};
+
+/** Object-arg upsert used by the rich case-study editor. Returns the row id.
+    On update the slug is preserved so public /projects/[slug] URLs stay stable. */
+export async function upsertProject(input: ProjectInput): Promise<string> {
+  await requireAdmin();
+  const title = input.title.trim() || "Başlıksız proje";
+  const common = {
+    title,
+    client: input.client?.trim() || null,
+    category: input.category?.trim() || null,
+    image: input.image || null,
+    data: input.data ?? {},
+  };
+  let id = input.id;
+  if (id) {
+    await prisma.project.update({ where: { id }, data: common });
+  } else {
+    const max = await prisma.project.aggregate({ _max: { order: true } });
+    const created = await prisma.project.create({
+      data: { ...common, slug: slugify(title), order: (max._max.order ?? 0) + 1 },
+    });
+    id = created.id;
+  }
+  const row = await prisma.project.findUnique({ where: { id }, select: { slug: true } });
+  refreshSite(["/projects", "/admin/projects", row ? `/projects/${row.slug}` : "/projects"]);
+  return id;
+}
+
+export async function deleteProjectById(id: string): Promise<void> {
+  await requireAdmin();
+  await prisma.project.delete({ where: { id } });
+  refreshSite(["/projects", "/admin/projects"]);
+}
+
 /* ------------------------------------------------------------------- blog */
 export async function saveBlogPost(fd: FormData) {
   await requireAdmin();
