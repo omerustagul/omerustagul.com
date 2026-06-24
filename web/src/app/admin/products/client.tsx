@@ -1,18 +1,26 @@
 "use client";
 
 import React, { useState } from "react";
+import { useRouter } from "next/navigation";
 import { AdmCard, Field, ImageUpload, GalleryUpload, MkSelect, Badge } from "@/components/admin/ui";
 import { Icon } from "@/components/admin/AdminIcons";
+import { upsertProduct, deleteProductById, type ProductInput } from "@/lib/actions/admin";
 
-// --- MOCK DATA ---
+type DbProduct = {
+  id: string;
+  title: string;
+  slug: string;
+  price: number;
+  type: string | null;
+  format: string | null;
+  seller: string | null;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  data: any;
+};
+
 const PR_TYPES = ["UI Kit", "Şablon", "İkon Seti", "Font", "Eklenti", "Mockup"];
 const PR_FORMATS = ["Figma", "Sketch", "HTML/CSS", "React", "PNG/SVG", "PSD"];
 const PR_LICENSES = ["Kişisel", "Ticari", "Genişletilmiş"];
-
-const MOCK_PRODUCTS = [
-  { id: 1, title: "Grid UI Kit", seller: "Marka", type: "UI Kit", format: "Figma", price: "$59", status: "Yayında" },
-  { id: 2, title: "Nova Admin", seller: "Marka", type: "Şablon", format: "React", price: "$49", status: "Taslak" },
-];
 
 // --- UTILS ---
 function uid() { return "x" + Math.random().toString(36).slice(2, 9); }
@@ -27,6 +35,7 @@ function renderRich(text: string) {
   });
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function FormSection({ title, hint, children }: any) {
   return (
     <div className="ed-section">
@@ -39,13 +48,14 @@ function FormSection({ title, hint, children }: any) {
   );
 }
 
-// --- COMPONENTS ---
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function SpecRows({ items = [], onChange }: any) {
-  const set = (id: string, k: string, v: string) => onChange(items.map((s: any) => s.id === id ? { ...s, [k]: v } : s));
+  const set = (id: string, k: string, v: string) => onChange(items.map((s: any) => s.id === id ? { ...s, [k]: v } : s)); // eslint-disable-line @typescript-eslint/no-explicit-any
   const add = () => onChange([...items, { id: uid(), k: "", v: "" }]);
-  const del = (id: string) => onChange(items.filter((s: any) => s.id !== id));
+  const del = (id: string) => onChange(items.filter((s: any) => s.id !== id)); // eslint-disable-line @typescript-eslint/no-explicit-any
   return (
     <div className="specs">
+      {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
       {items.map((s: any) => (
         <div key={s.id} className="specs__row">
           <input className="adm-input" value={s.k} onChange={e => set(s.id, "k", e.target.value)} placeholder="Özellik (örn. Bileşen)" />
@@ -58,12 +68,14 @@ function SpecRows({ items = [], onChange }: any) {
   );
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function BulletList({ items = [], onChange, placeholder }: any) {
-  const set = (id: string, v: string) => onChange(items.map((it: any) => it.id === id ? { ...it, text: v } : it));
+  const set = (id: string, v: string) => onChange(items.map((it: any) => it.id === id ? { ...it, text: v } : it)); // eslint-disable-line @typescript-eslint/no-explicit-any
   const add = () => onChange([...items, { id: uid(), text: "" }]);
-  const del = (id: string) => onChange(items.filter((it: any) => it.id !== id));
+  const del = (id: string) => onChange(items.filter((it: any) => it.id !== id)); // eslint-disable-line @typescript-eslint/no-explicit-any
   return (
     <div className="blist">
+      {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
       {items.map((it: any) => (
         <div key={it.id} className="blist__row">
           <span className="blist__dot" />
@@ -78,15 +90,41 @@ function BulletList({ items = [], onChange, placeholder }: any) {
   );
 }
 
-function ProductEditor({ product, onClose, onSave }: any) {
-  const init = product && product.fields ? product : {
-    id: product && product.id,
-    status: (product && product.status) || "Taslak",
-    fields: product ? { title: product.title, seller: product.seller, price: product.price, type: product.type, format: product.format } : { currency: "$", type: "UI Kit" },
+function ProductEditor({
+  product,
+  onClose,
+  onSave,
+}: {
+  product: DbProduct | null;
+  onClose: () => void;
+  onSave: (input: ProductInput) => Promise<void>;
+}) {
+  const rich = (product && product.data) || {};
+  const init = {
+    id: product?.id,
+    status: rich.status || "Taslak",
+    fields: {
+      title: product?.title || "",
+      seller: product?.seller || "",
+      type: product?.type || "UI Kit",
+      format: product?.format || "",
+      price: product ? String(product.price || "") : "",
+      currency: rich.currency || "$",
+      tagline: rich.tagline || "",
+      license: rich.license || "Ticari",
+      desc: rich.desc || "",
+      includes: rich.includes || [],
+      specs: rich.specs || [],
+      gallery: rich.gallery || [],
+      cover: rich.cover || "",
+    },
   };
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [data, setData] = useState<any>(init);
   const [aiBusy, setAiBusy] = useState(false);
+  const [saving, setSaving] = useState(false);
   const f = data.fields;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const update = (k: string, v: any) => setData((d: any) => ({ ...d, fields: { ...d.fields, [k]: v } }));
 
   const aiWrite = async () => {
@@ -96,27 +134,47 @@ function ProductEditor({ product, onClose, onSave }: any) {
     setAiBusy(false);
   };
 
-  const save = (status: string) => {
-    onSave({
-      id: data.id, status, fields: f,
-      title: f.title || "Başlıksız ürün", seller: f.seller || "—",
-      sales: product && product.sales ? product.sales : 0,
-      price: (f.price ? (f.currency || "$") + " " + f.price : "—"),
-      type: f.type || "Dijital Ürün", format: f.format || "Figma", cover: f.cover || null,
-    });
+  const save = async (status: string) => {
+    if (saving) return;
+    setSaving(true);
+    try {
+      await onSave({
+        id: data.id,
+        title: f.title || "Başlıksız ürün",
+        price: parseInt(String(f.price).replace(/[^\d]/g, ""), 10) || 0,
+        type: f.type || null,
+        format: f.format || null,
+        seller: f.seller || null,
+        data: {
+          status,
+          tagline: f.tagline || "",
+          currency: f.currency || "$",
+          priceLabel: f.price ? (f.currency || "$") + " " + f.price : "",
+          license: f.license || "",
+          desc: f.desc || "",
+          includes: f.includes || [],
+          specs: f.specs || [],
+          gallery: f.gallery || [],
+          cover: f.cover || "",
+        },
+      });
+    } finally {
+      setSaving(false);
+    }
   };
 
   const incl = f.includes || [];
 
   return (
-    <div style={{ background: "var(--surface)", position: "absolute", inset: 0, zIndex: 100, display: "flex", flexDirection: "column" }}>
-      <div className="ed-toolbar" style={{ flexShrink: 0 }}>
+    <div>
+      <div className="ed-toolbar">
         <button className="ed-back" onClick={onClose}><Icon name="close" size={14} /> Market'e dön</button>
         <span className="adm-badge adm-badge--green">Ürün düzenleyici</span>
         <span className="sp" style={{ flex: 1 }} />
+        {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
         <MkSelect width="150px" value={data.status} onChange={v => setData((d: any) => ({ ...d, status: v }))} options={["Taslak", "Arşiv", "Yayında"]} />
-        <button className="adm-btn adm-btn--ghost" onClick={() => save("Taslak")}>Taslağa kaydet</button>
-        <button className="adm-btn adm-btn--primary" onClick={() => save("Yayında")}><Icon name="eye" size={15} /> Yayınla</button>
+        <button className="adm-btn adm-btn--ghost" disabled={saving} onClick={() => save(data.status === "Yayında" ? "Yayında" : "Taslak")}>Taslağa kaydet</button>
+        <button className="adm-btn adm-btn--primary" disabled={saving} onClick={() => save("Yayında")}><Icon name="eye" size={15} /> {saving ? "Kaydediliyor…" : "Yayınla"}</button>
       </div>
 
       <div className="editor">
@@ -150,14 +208,17 @@ function ProductEditor({ product, onClose, onSave }: any) {
           </FormSection>
 
           <FormSection title="Pakette neler var?" hint="ürünle birlikte gelenler">
+            {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
             <BulletList items={incl} onChange={(v: any) => update("includes", v)} placeholder="örn. 48 hazır bileşen" />
           </FormSection>
 
           <FormSection title="Teknik özellikler">
+            {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
             <SpecRows items={f.specs || []} onChange={(v: any) => update("specs", v)} />
           </FormSection>
 
           <FormSection title="Galeri">
+            {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
             <GalleryUpload label="Önizleme görselleri" items={f.gallery || []} onChange={(v: any) => update("gallery", v)} />
           </FormSection>
         </div>
@@ -175,18 +236,18 @@ function ProductEditor({ product, onClose, onSave }: any) {
                 <span className="kicker">{f.type || "Dijital Ürün"}{f.format ? ` · ${f.format}` : ""}</span>
                 <h1>{f.title || "Ürün adı"}</h1>
                 {f.tagline && <p className="lead">{f.tagline}</p>}
-                
+
                 <div className="pv__cover" style={{ aspectRatio: "4/3" }}>
                   {f.cover ? <img src={f.cover} alt="" /> : <div className="pv__placeholder">ÜRÜN KAPAĞI</div>}
                 </div>
-                
+
                 <div className="pv-course__bar">
                   <div className="pv-course__price">
                     <span className="now">{f.price ? (f.currency || "$") + " " + f.price : "Ücretsiz"}</span>
                   </div>
                   <button className="btn btn--primary" style={{ pointerEvents: "none" }}>Satın Al</button>
                 </div>
-                
+
                 <dl className="pv__meta">
                   <div><dt>Satıcı</dt><dd>{f.seller || "—"}</dd></div>
                   <div><dt>Format</dt><dd>{f.format || "—"}</dd></div>
@@ -196,10 +257,12 @@ function ProductEditor({ product, onClose, onSave }: any) {
 
                 {f.desc && <div style={{ display: "flex", flexDirection: "column", gap: ".9rem" }}>{renderRich(f.desc)}</div>}
 
+                {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
                 {incl.filter((i: any) => i.text).length > 0 && (
                   <div className="pv__block">
                     <span className="kicker">Pakette</span>
                     <ul className="pv-checklist">
+                      {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
                       {incl.filter((i: any) => i.text).map((i: any) => (
                         <li key={i.id}>
                           <span className="ck">✓</span>
@@ -210,10 +273,12 @@ function ProductEditor({ product, onClose, onSave }: any) {
                   </div>
                 )}
 
+                {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
                 {(f.specs || []).filter((s: any) => s.k).length > 0 && (
                   <div className="pv__block">
                     <span className="kicker">Özellikler</span>
                     <dl className="pv-specs">
+                      {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
                       {f.specs.filter((s: any) => s.k).map((s: any) => (
                         <div key={s.id}>
                           <dt>{s.k}</dt>
@@ -226,6 +291,7 @@ function ProductEditor({ product, onClose, onSave }: any) {
 
                 {f.gallery && f.gallery.length > 0 && (
                   <div className="pv__gal">
+                    {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
                     {f.gallery.map((g: any) => <img key={g.id} src={g.src} alt="" />)}
                   </div>
                 )}
@@ -239,36 +305,38 @@ function ProductEditor({ product, onClose, onSave }: any) {
 }
 
 // --- PAGE LIST ---
-export function ProductsClient() {
-  const [products, setProducts] = useState(MOCK_PRODUCTS);
-  const [editing, setEditing] = useState<any>(null);
+export function ProductsClient({ initial }: { initial: DbProduct[] }) {
+  const router = useRouter();
+  const [editing, setEditing] = useState<DbProduct | "new" | null>(null);
+
+  const handleSave = async (input: ProductInput) => {
+    await upsertProduct(input);
+    setEditing(null);
+    router.refresh();
+  };
+
+  const handleDelete = async (id: string) => {
+    if (!confirm("Bu ürün silinsin mi? Bu işlem geri alınamaz.")) return;
+    await deleteProductById(id);
+    router.refresh();
+  };
 
   if (editing) {
     return (
-      <ProductEditor 
-        product={editing} 
-        onClose={() => setEditing(null)} 
-        onSave={(p: any) => { 
-          if (products.find(x => x.id === p.id)) {
-            setProjects(products.map(x => x.id === p.id ? p : x)); // Note: setProjects to setProducts fix
-          } else {
-            setProducts([{ id: Date.now(), ...p }, ...products]);
-          }
-          setEditing(null); 
-        }} 
+      <ProductEditor
+        product={editing === "new" ? null : editing}
+        onClose={() => setEditing(null)}
+        onSave={handleSave}
       />
     );
   }
 
-  // Helper setProducts since imported mock code had setProjects by mistake
-  const setProjects = setProducts;
-
   return (
-    <AdmCard 
-      title="Dijital Ürünler (Market)" 
-      desc={`${products.length} ürün`}
+    <AdmCard
+      title="Dijital Ürünler (Market)"
+      desc={`${initial.length} ürün`}
       action={
-        <button className="adm-btn adm-btn--primary" onClick={() => setEditing({ id: Date.now() })}>
+        <button className="adm-btn adm-btn--primary" onClick={() => setEditing("new")}>
           <Icon name="plus" size={14} /> Ürün Ekle
         </button>
       }
@@ -286,30 +354,35 @@ export function ProductsClient() {
           </tr>
         </thead>
         <tbody>
-          {products.map(p => (
-            <tr key={p.id}>
-              <td style={{ width: 56 }}>
-                <div className="ph" style={{ width: 48, height: 32, borderRadius: 6 }}>
-                  <div className="ph__in" />
-                </div>
-              </td>
-              <td className="ti">{p.title}</td>
-              <td style={{ color: "var(--text-muted)", fontSize: "13px" }}>{p.seller}</td>
-              <td style={{ color: "var(--text-muted)", fontSize: "13px" }}>{p.type} · {p.format}</td>
-              <td style={{ color: "var(--text-muted)", fontSize: "13px", fontFamily: "var(--font-mono)" }}>{p.price}</td>
-              <td><Badge tone={p.status === "Yayında" ? "green" : "muted"}>{p.status}</Badge></td>
-              <td>
-                <div className="adm-row-actions">
-                  <button className="adm-iconbtn" onClick={() => setEditing(p)} aria-label="Düzenle">
-                    <Icon name="edit" size={14} />
-                  </button>
-                  <button className="adm-iconbtn" onClick={() => setProjects(products.filter(x => x.id !== p.id))} aria-label="Sil">
-                    <Icon name="trash" size={14} />
-                  </button>
-                </div>
-              </td>
-            </tr>
-          ))}
+          {initial.map(p => {
+            const status: string = p.data?.status || "Yayında";
+            const priceLabel = p.data?.priceLabel || (p.price ? "$" + p.price : "—");
+            const cover = p.data?.cover;
+            return (
+              <tr key={p.id}>
+                <td style={{ width: 56 }}>
+                  <div className="ph" style={{ width: 48, height: 32, borderRadius: 6 }}>
+                    {cover ? <img src={cover} alt="" style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: 6 }} /> : <div className="ph__in" />}
+                  </div>
+                </td>
+                <td className="ti">{p.title}</td>
+                <td style={{ color: "var(--text-muted)", fontSize: "13px" }}>{p.seller || "—"}</td>
+                <td style={{ color: "var(--text-muted)", fontSize: "13px" }}>{[p.type, p.format].filter(Boolean).join(" · ") || "—"}</td>
+                <td style={{ color: "var(--text-muted)", fontSize: "13px", fontFamily: "var(--font-mono)" }}>{priceLabel}</td>
+                <td><Badge tone={status === "Yayında" ? "green" : "muted"}>{status}</Badge></td>
+                <td>
+                  <div className="adm-row-actions">
+                    <button className="adm-iconbtn" onClick={() => setEditing(p)} aria-label="Düzenle">
+                      <Icon name="edit" size={14} />
+                    </button>
+                    <button className="adm-iconbtn" onClick={() => handleDelete(p.id)} aria-label="Sil">
+                      <Icon name="trash" size={14} />
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            );
+          })}
         </tbody>
       </table>
     </AdmCard>

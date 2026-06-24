@@ -73,6 +73,30 @@ export const FONTS = [
     family: '"Hanken Grotesk", sans-serif',
     link: "https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700&display=swap",
   },
+  {
+    id: "inter",
+    label: "Inter",
+    family: '"Inter", sans-serif',
+    link: "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap",
+  },
+  {
+    id: "manrope",
+    label: "Manrope",
+    family: '"Manrope", sans-serif',
+    link: "https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&display=swap",
+  },
+  {
+    id: "jakarta",
+    label: "Plus Jakarta Sans",
+    family: '"Plus Jakarta Sans", sans-serif',
+    link: "https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap",
+  },
+  {
+    id: "poppins",
+    label: "Poppins",
+    family: '"Poppins", sans-serif',
+    link: "https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap",
+  },
 ];
 
 export function fontById(id: string) {

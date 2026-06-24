@@ -3,8 +3,9 @@
 // See ../../MIGRATION.md §3 for the field provenance.
 
 generator client {
-  provider = "prisma-client"
-  output   = "../src/generated/prisma"
+  provider        = "prisma-client"
+  output          = "../src/generated/prisma"
+  previewFeatures = ["partialIndexes"] // Booking slot kısmi benzersiz index'i (aşağıda)
 }
 
 datasource db {
@@ -45,6 +46,9 @@ model Course {
   level       String? // Başlangıç | Orta | İleri
   topic       String? // Tasarım | Geliştirme | Motion | Strateji
   instructor  String?
+  // Rich course fields: tagline, lang, currency, price label, salePrice, desc,
+  // curriculum (modules[].lessons[]), outcomes[], requirements[], cover, status.
+  data        Json?
   createdAt   DateTime     @default(now())
   modules     Module[]
   enrollments Enrollment[]
@@ -102,6 +106,9 @@ model Product {
   type      String? // UI Kit | Şablon | İkon Seti | Sunum
   format    String? // Figma | React | SVG | Keynote
   seller    String?
+  // Rich product fields: tagline, currency, license, desc, includes[], specs[],
+  // gallery[], cover, status. Mirrors the prototype's product object.
+  data      Json?
   createdAt DateTime   @default(now())
   reviews   Review[]
 }
@@ -176,6 +183,10 @@ model Project {
   image     String?
   featured  Boolean       @default(false)
   order     Int           @default(0)
+  // Rich case-study content the list/query columns don't cover: year, services,
+  // duration, role, problem, solution, body, metrics[], quote{author,role},
+  // gallery[], next, status. Mirrors the prototype's localStorage project object.
+  data      Json?
   createdAt DateTime      @default(now())
   votes     ProjectVote[]
 }
@@ -191,6 +202,9 @@ model BlogPost {
   readTime    String?
   featured    Boolean   @default(false)
   publishedAt DateTime? // null = draft
+  // Rich/template fields: template id + per-block content (cover, kicker, lead,
+  // body, image, gallery[], qa[], list[], …) + status. Mirrors the prototype.
+  data        Json?
   createdAt   DateTime  @default(now())
 }
 
@@ -238,9 +252,23 @@ model Booking {
   id        String   @id @default(cuid())
   name      String
   email     String
+  phone     String?
+  topic     String? // "Marka & ürün" | "Web tasarım" | ...
+  type      String? // "Online" | "Yüz yüze" | "Telefon"
+  message   String?
   slot      DateTime
   status    String   @default("pending")
   createdAt DateTime @default(now())
+
+  // Double-booking yarışı UYGULAMA düzeyinde önlenir: createBooking, slot'a özel bir Postgres
+  // advisory lock'lu transaction içinde önce uygunluğu yeniden kontrol edip sonra insert eder.
+  // DB'de slot üzerinde unique kısıt YOK — Prisma 7 kısmi (yalnızca iptal-olmayan) unique index'i
+  // ifade edemiyor ve full unique, iptal edilen slotun yeniden açılmasını engellerdi.
+}
+
+model BookingConfig {
+  id   Int  @id @default(1)
+  data Json // { weekly: Record<0..6, boolean>, slots: string[], closedDates: string[] }
 }
 
 // ------------------------------------------------------- content & settings

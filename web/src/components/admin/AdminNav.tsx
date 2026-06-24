@@ -52,6 +52,7 @@ const ROUTES: Record<string, { title: string; sub: string }> = {
   "/admin/leads": { title: "Talepler / Lead", sub: "Teklif ve iletişim talepleri" },
   "/admin/bookings": { title: "Randevular", sub: "Keşif görüşmeleri" },
   "/admin/projects": { title: "Projeler", sub: "Portfolyo yönetimi" },
+  "/admin/partners": { title: "İş Ortakları", sub: "Logo duvarı / partner yönetimi" },
   "/admin/profilecv": { title: "Ben Kimim — CV", sub: "Kariyer profili sayfası içeriği" },
   "/admin/community": { title: "Oyunlar & Topluluk", sub: "Oyunları ve koleksiyonları yönet" },
   "/admin/services": { title: "Hizmetler", sub: "Sunduğunuz hizmetler — projelere atanır" },
@@ -113,7 +114,7 @@ export function AdminTop() {
       <button className="adm-iconbtn" aria-label="Tema" style={{ width: 38, height: 38 }}>
         ☾
       </button>
-      <Link href="/" className="adm-btn adm-btn--ghost" target="_blank">
+      <Link href="/" className="adm-btn adm-btn--dark" target="_blank">
         <Icon name="external" size={15} /> Siteyi Gör
       </Link>
     </header>

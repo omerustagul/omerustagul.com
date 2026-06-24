@@ -1,21 +1,33 @@
 "use client";
 
 import React, { useState } from "react";
+import { useRouter } from "next/navigation";
 import { AdmCard, Field, ImageUpload, GalleryUpload, MkSelect, Badge } from "@/components/admin/ui";
 import { Icon } from "@/components/admin/AdminIcons";
+import { upsertBlogPost, deleteBlogPostById, type BlogInput } from "@/lib/actions/admin";
 
-// --- MOCK DATA & CONSTANTS ---
+type DbPost = {
+  id: string;
+  title: string;
+  slug: string;
+  excerpt: string | null;
+  body: string | null;
+  category: string | null;
+  image: string | null;
+  readTime: string | null;
+  featured: boolean;
+  publishedAt: Date | string | null;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  data: any;
+};
+
+// --- TEMPLATES ---
 const BLOG_TPLS = [
   { id: "standart", label: "Standart Makale", desc: "Kapak, spot, gövde ve araya görsel", vis: ["img", "bar", "bar"], blocks: [ { k: "cover", t: "cover", label: "Kapak görseli" }, { k: "kicker", t: "kicker", label: "Kategori / üst başlık" }, { k: "title", t: "title", label: "Başlık" }, { k: "lead", t: "lead", label: "Spot / giriş" }, { k: "body", t: "rich", label: "Gövde metni", ai: true }, { k: "image", t: "image", label: "Araya görsel" }, { k: "body2", t: "rich", label: "Devam metni" } ] },
   { id: "foto", label: "Foto Hikâye", desc: "Görsel ağırlıklı, galeri düzeni", vis: ["img", "row2"], blocks: [ { k: "cover", t: "cover", label: "Büyük kapak" }, { k: "title", t: "title", label: "Başlık" }, { k: "lead", t: "lead", label: "Giriş" }, { k: "gallery", t: "gallery", label: "Foto galerisi" }, { k: "body", t: "rich", label: "Kapanış notu", ai: true } ] },
   { id: "roportaj", label: "Röportaj", desc: "Soru–cevap düzeni", vis: ["bar", "qa", "qa"], blocks: [ { k: "cover", t: "cover", label: "Kapak görseli" }, { k: "kicker", t: "kicker", label: "Konuk" }, { k: "title", t: "title", label: "Başlık" }, { k: "lead", t: "lead", label: "Giriş" }, { k: "qa", t: "qa", label: "Soru & Cevaplar" } ] },
   { id: "rehber", label: "Liste / Rehber", desc: "Numaralı adımlar", vis: ["bar", "step", "step"], blocks: [ { k: "cover", t: "cover", label: "Kapak görseli" }, { k: "title", t: "title", label: "Başlık" }, { k: "lead", t: "lead", label: "Giriş" }, { k: "list", t: "list", label: "Adımlar / maddeler" } ] },
   { id: "minimal", label: "Minimal Deneme", desc: "Yalnızca tipografi, kapaksız", vis: ["bar", "bar", "bars"], blocks: [ { k: "kicker", t: "kicker", label: "Üst başlık" }, { k: "title", t: "title", label: "Başlık" }, { k: "body", t: "rich", label: "Metin", ai: true } ] },
-];
-
-const MOCK_POSTS = [
-  { id: 1, title: "Tasarım Sistemlerinin Evrimi", cat: "Süreç", status: "Yayında", views: "1.2k", date: "15 Haz 2026", cover: "" },
-  { id: 2, title: "Mikro Etkileşimler Neden Önemli?", cat: "Görüş", status: "Taslak", views: "—", date: "—", cover: "" },
 ];
 
 // --- UTILS ---
@@ -29,23 +41,42 @@ function renderRich(text: string) {
   });
 }
 
-function genImg(hue: number) { 
-  const c = document.createElement("canvas"); c.width = 480; c.height = 360; 
+function genImg(hue: number) {
+  const c = document.createElement("canvas"); c.width = 480; c.height = 360;
   const x = c.getContext("2d"); if (!x) return "";
-  const h = ((150 + hue) % 360 + 360) % 360; 
-  const g = x.createLinearGradient(0, 0, 480, 360); 
-  g.addColorStop(0, `hsl(${h} 62% 72%)`); g.addColorStop(1, `hsl(${(h + 40) % 360} 30% 90%)`); 
-  x.fillStyle = g; x.fillRect(0, 0, 480, 360); 
-  x.fillStyle = "rgba(255,255,255,.45)"; x.beginPath(); x.arc(360, 110, 64, 0, 7); x.fill(); 
-  return c.toDataURL("image/png"); 
+  const h = ((150 + hue) % 360 + 360) % 360;
+  const g = x.createLinearGradient(0, 0, 480, 360);
+  g.addColorStop(0, `hsl(${h} 62% 72%)`); g.addColorStop(1, `hsl(${(h + 40) % 360} 30% 90%)`);
+  x.fillStyle = g; x.fillRect(0, 0, 480, 360);
+  x.fillStyle = "rgba(255,255,255,.45)"; x.beginPath(); x.arc(360, 110, 64, 0, 7); x.fill();
+  return c.toDataURL("image/png");
+}
+
+// Build the persistence payload from the editor/wizard working object.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function buildBlogInput(state: any, status: string): BlogInput {
+  const f = state.fields || {};
+  return {
+    id: state.id,
+    title: f.title || "Başlıksız",
+    excerpt: f.lead || null,
+    body: f.body || null,
+    category: f.kicker || null,
+    image: f.cover || null,
+    readTime: null,
+    published: status === "Yayında",
+    data: { template: state.template, status, fields: f },
+  };
 }
 
 // --- REPEATERS ---
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function QARepeater({ items = [], onChange }: any) {
   const add = () => onChange([...items, { id: Date.now() + Math.random(), q: "", a: "" }]);
-  const upd = (id: any, p: any) => onChange(items.map((x: any) => x.id === id ? { ...x, ...p } : x));
+  const upd = (id: any, p: any) => onChange(items.map((x: any) => x.id === id ? { ...x, ...p } : x)); // eslint-disable-line @typescript-eslint/no-explicit-any
   return (
     <div>
+      {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
       {items.map((it: any, i: number) => (
         <div className="blk" key={it.id}>
           <button className="blk__x" onClick={() => onChange(items.filter((x: any) => x.id !== it.id))}><Icon name="close" size={12} /></button>
@@ -58,11 +89,13 @@ function QARepeater({ items = [], onChange }: any) {
   );
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function ListRepeater({ items = [], onChange }: any) {
   const add = () => onChange([...items, { id: Date.now() + Math.random(), h: "", text: "", img: null }]);
-  const upd = (id: any, p: any) => onChange(items.map((x: any) => x.id === id ? { ...x, ...p } : x));
+  const upd = (id: any, p: any) => onChange(items.map((x: any) => x.id === id ? { ...x, ...p } : x)); // eslint-disable-line @typescript-eslint/no-explicit-any
   return (
     <div>
+      {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
       {items.map((it: any, i: number) => (
         <div className="blk" key={it.id}>
           <button className="blk__x" onClick={() => onChange(items.filter((x: any) => x.id !== it.id))}><Icon name="close" size={12} /></button>
@@ -77,6 +110,7 @@ function ListRepeater({ items = [], onChange }: any) {
 }
 
 // --- BLOCK COMPONENTS ---
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function BlockForm({ block, value, setVal, onAI, aiBusy }: any) {
   const t = block.t;
   if (t === "cover") return <ImageUpload label={block.label} ratio="21/9" value={value} onChange={setVal} hint="öneri 2000×860" />;
@@ -87,7 +121,7 @@ function BlockForm({ block, value, setVal, onAI, aiBusy }: any) {
   if (t === "title") return <Field label={block.label}><input className="adm-input" style={{ fontSize: "1.1rem", fontWeight: 600 }} value={value || ""} onChange={e => setVal(e.target.value)} placeholder="Etkileyici bir başlık…" /></Field>;
   if (t === "kicker") return <Field label={block.label}><input className="adm-input" value={value || ""} onChange={e => setVal(e.target.value)} placeholder="örn. Görüş" /></Field>;
   if (t === "lead") return <Field label={block.label}><textarea className="adm-textarea" style={{ minHeight: "4rem" }} value={value || ""} onChange={e => setVal(e.target.value)} placeholder="Tek paragraflık çarpıcı giriş…" /></Field>;
-  
+
   return (
     <div className="adm-field">
       <label style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>{block.label}
@@ -102,6 +136,7 @@ function BlockForm({ block, value, setVal, onAI, aiBusy }: any) {
   );
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function BlockPreview({ block, value }: any) {
   const t = block.t;
   if (t === "cover") return <div className="pv__cover">{value ? <img src={value} alt="" /> : <div className="pv__placeholder">KAPAK GÖRSELİ</div>}</div>;
@@ -110,21 +145,23 @@ function BlockPreview({ block, value }: any) {
   if (t === "lead") return value ? <p className="lead">{value}</p> : null;
   if (t === "rich") return <div style={{ display: "flex", flexDirection: "column", gap: ".9rem" }}>{renderRich(value)}</div>;
   if (t === "image") return <figure>{value ? <img className="inl" src={value} alt="" /> : <div className="pv__placeholder">ARAYA GÖRSEL</div>}</figure>;
-  if (t === "gallery") return (value && value.length) ? <div className="pv__gal">{value.map((g: any) => <figure key={g.id}><img src={g.src} alt="" />{g.caption && <figcaption>{g.caption}</figcaption>}</figure>)}</div> : <div className="pv__placeholder">FOTO GALERİSİ</div>;
-  if (t === "qa") return (value && value.length) ? <div style={{ display: "flex", flexDirection: "column", gap: "1.1rem" }}>{value.map((x: any) => <div className="pv__qa" key={x.id}><span className="q">{x.q || "Soru?"}</span><span className="a">{x.a || "Cevap…"}</span></div>)}</div> : <div className="pv__placeholder">SORU & CEVAP</div>;
-  if (t === "list") return (value && value.length) ? <div style={{ display: "flex", flexDirection: "column", gap: "1.3rem" }}>{value.map((x: any, i: number) => <div className="pv__step" key={x.id}><span className="n">{String(i + 1).padStart(2, "0")}</span><div style={{ flex: 1, display: "flex", flexDirection: "column", gap: ".5rem" }}><h2 style={{ margin: 0 }}>{x.h || "Adım"}</h2>{x.text && <p style={{ margin: 0 }}>{x.text}</p>}{x.img && <img className="inl" src={x.img} alt="" />}</div></div>)}</div> : <div className="pv__placeholder">ADIMLAR</div>;
+  if (t === "gallery") return (value && value.length) ? <div className="pv__gal">{value.map((g: any) => <figure key={g.id}><img src={g.src} alt="" />{g.caption && <figcaption>{g.caption}</figcaption>}</figure>)}</div> : <div className="pv__placeholder">FOTO GALERİSİ</div>; // eslint-disable-line @typescript-eslint/no-explicit-any
+  if (t === "qa") return (value && value.length) ? <div style={{ display: "flex", flexDirection: "column", gap: "1.1rem" }}>{value.map((x: any) => <div className="pv__qa" key={x.id}><span className="q">{x.q || "Soru?"}</span><span className="a">{x.a || "Cevap…"}</span></div>)}</div> : <div className="pv__placeholder">SORU & CEVAP</div>; // eslint-disable-line @typescript-eslint/no-explicit-any
+  if (t === "list") return (value && value.length) ? <div style={{ display: "flex", flexDirection: "column", gap: "1.3rem" }}>{value.map((x: any, i: number) => <div className="pv__step" key={x.id}><span className="n">{String(i + 1).padStart(2, "0")}</span><div style={{ flex: 1, display: "flex", flexDirection: "column", gap: ".5rem" }}><h2 style={{ margin: 0 }}>{x.h || "Adım"}</h2>{x.text && <p style={{ margin: 0 }}>{x.text}</p>}{x.img && <img className="inl" src={x.img} alt="" />}</div></div>)}</div> : <div className="pv__placeholder">ADIMLAR</div>; // eslint-disable-line @typescript-eslint/no-explicit-any
   return null;
 }
 
 // --- WIZARD ---
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function BlogWizard({ onClose, onSave }: any) {
   const [step, setStep] = useState(1);
   const [topic, setTopic] = useState("");
   const [custom, setCustom] = useState("");
   const [steer, setSteer] = useState("");
   const [sugs, setSugs] = useState(["2026'da editoryal tasarım trendleri", "Marka kimliğinde tipografinin rolü", "Web'de mikro etkileşimlerin gücü", "Tasarım sistemleri nasıl ölçeklenir?", "Kreatif ekiplerde süreç yönetimi"]);
-  const [data, setData] = useState<any>(null);
+  const [data, setData] = useState<any>(null); // eslint-disable-line @typescript-eslint/no-explicit-any
   const [busy, setBusy] = useState(false);
+  const [saving, setSaving] = useState(false);
 
   const suggest = async () => {
     setBusy(true);
@@ -137,8 +174,8 @@ function BlogWizard({ onClose, onSave }: any) {
     setStep(3); setBusy(true); setData(null);
     await new Promise(r => setTimeout(r, 1500));
     const t = BLOG_TPLS.find(x => x.id === tplId)!;
-    const f: any = {};
-    t.blocks.forEach((b: any, i: number) => {
+    const f: any = {}; // eslint-disable-line @typescript-eslint/no-explicit-any
+    t.blocks.forEach((b: any, i: number) => { // eslint-disable-line @typescript-eslint/no-explicit-any
       if (b.t === "title") f[b.k] = topic;
       else if (b.t === "kicker") f[b.k] = "Görüş";
       else if (b.t === "lead") f[b.k] = `${topic} üzerine kısa bir giriş.`;
@@ -151,14 +188,15 @@ function BlogWizard({ onClose, onSave }: any) {
     setData({ template: tplId, status: "Taslak", fields: f }); setBusy(false);
   };
 
-  const save = (status: string) => {
-    const f = data.fields;
-    onSave({ template: data.template, status, fields: f, title: f.title || topic, cat: f.kicker || "Görüş", cover: f.cover || null, date: status === "Yayında" ? new Date().toLocaleDateString("tr-TR") : "—", author: "AI", views: "—" });
+  const save = async (status: string) => {
+    if (saving) return;
+    setSaving(true);
+    try { await onSave(buildBlogInput(data, status)); } finally { setSaving(false); }
   };
 
   return (
-    <div style={{ background: "var(--surface)", position: "absolute", inset: 0, zIndex: 100, display: "flex", flexDirection: "column" }}>
-      <div className="ed-toolbar" style={{ flexShrink: 0 }}>
+    <div>
+      <div className="ed-toolbar">
         <button className="ed-back" onClick={onClose}><Icon name="close" size={14} /> Kapat</button>
         <span className="ai-chip" style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "var(--accent)", color: "#fff", padding: "4px 10px", borderRadius: 16, fontSize: 12, fontWeight: 600 }}>
           <Icon name="ai" size={12} fill /> AI Yazı Sihirbazı
@@ -227,8 +265,8 @@ function BlogWizard({ onClose, onSave }: any) {
                 <button className="adm-btn adm-btn--ghost" onClick={() => setStep(2)}>← Şablon</button>
                 <div style={{ display: "flex", gap: "0.5rem" }}>
                   <button className="adm-btn adm-btn--danger" onClick={onClose}><Icon name="trash" size={14} /> Sil</button>
-                  <button className="adm-btn adm-btn--ghost" disabled={busy || !data} onClick={() => save("Taslak")}>Taslağa kaydet</button>
-                  <button className="adm-btn adm-btn--primary" disabled={busy || !data} onClick={() => save("Yayında")}><Icon name="eye" size={15} /> Yayınla</button>
+                  <button className="adm-btn adm-btn--ghost" disabled={busy || !data || saving} onClick={() => save("Taslak")}>Taslağa kaydet</button>
+                  <button className="adm-btn adm-btn--primary" disabled={busy || !data || saving} onClick={() => save("Yayında")}><Icon name="eye" size={15} /> Yayınla</button>
                 </div>
               </div>
               {busy || !data ? (
@@ -254,16 +292,21 @@ function BlogWizard({ onClose, onSave }: any) {
 }
 
 // --- EDITOR ---
-function BlogEditor({ post, onClose, onSave }: any) {
-  const init = post && post.fields ? post
-    : (post && post.title) ? { id: post.id, template: "standart", status: post.status || "Taslak", fields: { title: post.title, kicker: post.cat, lead: post.excerpt || "" } }
-    : { id: post && post.id, template: null, status: "Taslak", fields: {} };
-    
-  const [data, setData] = useState<any>(init);
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function BlogEditor({ post, onClose, onSave }: { post: DbPost | null; onClose: () => void; onSave: (input: BlogInput) => Promise<void> }) {
+  const rich = (post && post.data) || null;
+  const init = rich
+    ? { id: post!.id, template: rich.template || "standart", status: rich.status || (post!.publishedAt ? "Yayında" : "Taslak"), fields: rich.fields || {} }
+    : post
+      ? { id: post.id, template: "standart", status: post.publishedAt ? "Yayında" : "Taslak", fields: { title: post.title, kicker: post.category, lead: post.excerpt || "", body: post.body || "", cover: post.image || "" } }
+      : { id: undefined, template: null, status: "Taslak", fields: {} };
+
+  const [data, setData] = useState<any>(init); // eslint-disable-line @typescript-eslint/no-explicit-any
   const [aiBusy, setAiBusy] = useState(false);
+  const [saving, setSaving] = useState(false);
   const tpl = BLOG_TPLS.find(t => t.id === data.template);
-  
-  const setField = (k: string, v: any) => setData((d: any) => ({ ...d, fields: { ...d.fields, [k]: v } }));
+
+  const setField = (k: string, v: any) => setData((d: any) => ({ ...d, fields: { ...d.fields, [k]: v } })); // eslint-disable-line @typescript-eslint/no-explicit-any
 
   const aiWrite = async () => {
     setAiBusy(true);
@@ -272,14 +315,15 @@ function BlogEditor({ post, onClose, onSave }: any) {
     setAiBusy(false);
   };
 
-  const save = (status: string) => {
-    const f = data.fields;
-    onSave({ id: data.id, template: data.template, status, fields: f, title: f.title || "Başlıksız", cat: f.kicker || "Görüş", cover: f.cover || null, date: status === "Yayında" ? new Date().toLocaleDateString("tr-TR") : "—", author: "Sen", views: "—" });
+  const save = async (status: string) => {
+    if (saving) return;
+    setSaving(true);
+    try { await onSave(buildBlogInput(data, status)); } finally { setSaving(false); }
   };
 
   if (!tpl) {
     return (
-      <div style={{ background: "var(--surface)", position: "absolute", inset: 0, zIndex: 100, display: "flex", flexDirection: "column" }}>
+      <div>
         <div className="ed-toolbar">
           <button className="ed-back" onClick={onClose}><Icon name="close" size={15} /> Kapat</button>
         </div>
@@ -310,9 +354,10 @@ function BlogEditor({ post, onClose, onSave }: any) {
         <button className="ed-back" onClick={() => setData((d: any) => ({ ...d, template: null }))}><Icon name="close" size={14} /> Şablonu değiştir</button>
         <span className="adm-badge adm-badge--green">{tpl.label}</span>
         <span className="sp" />
+        {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
         <MkSelect width="160px" value={data.status} onChange={v => setData((d: any) => ({ ...d, status: v }))} options={["Taslak", "Zamanlandı", "Yayında"]} />
-        <button className="adm-btn adm-btn--ghost" onClick={() => save("Taslak")}>Taslağa kaydet</button>
-        <button className="adm-btn adm-btn--primary" onClick={() => save("Yayında")}><Icon name="eye" size={15} /> Yayınla</button>
+        <button className="adm-btn adm-btn--ghost" disabled={saving} onClick={() => save(data.status === "Yayında" ? "Yayında" : "Taslak")}>Taslağa kaydet</button>
+        <button className="adm-btn adm-btn--primary" disabled={saving} onClick={() => save("Yayında")}><Icon name="eye" size={15} /> {saving ? "Kaydediliyor…" : "Yayınla"}</button>
       </div>
 
       <div className="editor">
@@ -340,37 +385,39 @@ function BlogEditor({ post, onClose, onSave }: any) {
 }
 
 // --- PAGE LIST ---
-export function BlogClient() {
-  const [posts, setPosts] = useState(MOCK_POSTS);
-  const [editing, setEditing] = useState<any>(null);
+export function BlogClient({ initial }: { initial: DbPost[] }) {
+  const router = useRouter();
+  const [editing, setEditing] = useState<DbPost | "new" | null>(null);
   const [wizard, setWizard] = useState(false);
 
+  const handleSave = async (input: BlogInput) => {
+    await upsertBlogPost(input);
+    setEditing(null);
+    setWizard(false);
+    router.refresh();
+  };
+
+  const handleDelete = async (id: string) => {
+    if (!confirm("Bu yazı silinsin mi? Bu işlem geri alınamaz.")) return;
+    await deleteBlogPostById(id);
+    router.refresh();
+  };
+
   if (wizard) {
-    return (
-      <BlogWizard 
-        onClose={() => setWizard(false)} 
-        onSave={(p: any) => { setPosts([{ id: Date.now(), ...p }, ...posts]); setWizard(false); }} 
-      />
-    );
+    return <BlogWizard onClose={() => setWizard(false)} onSave={handleSave} />;
   }
 
   if (editing) {
-    return (
-      <BlogEditor 
-        post={editing} 
-        onClose={() => setEditing(null)} 
-        onSave={(p: any) => { setPosts(posts.map(x => x.id === p.id ? p : x)); setEditing(null); }} 
-      />
-    );
+    return <BlogEditor post={editing === "new" ? null : editing} onClose={() => setEditing(null)} onSave={handleSave} />;
   }
 
   return (
-    <AdmCard 
-      title="Blog Yazıları" 
-      desc={`${posts.length} yazı`}
+    <AdmCard
+      title="Blog Yazıları"
+      desc={`${initial.length} yazı`}
       action={
         <div style={{ display: "flex", gap: "0.5rem" }}>
-          <button className="adm-btn adm-btn--primary" onClick={() => setEditing({ id: Date.now() })}>
+          <button className="adm-btn adm-btn--primary" onClick={() => setEditing("new")}>
             <Icon name="plus" size={14} /> Yazı Ekle
           </button>
           <button className="adm-btn adm-btn--ghost" onClick={() => setWizard(true)}>
@@ -387,35 +434,38 @@ export function BlogClient() {
             <th>Kategori</th>
             <th>Durum</th>
             <th>Tarih</th>
-            <th>Görünüm</th>
             <th></th>
           </tr>
         </thead>
         <tbody>
-          {posts.map(p => (
-            <tr key={p.id}>
-              <td style={{ width: 56 }}>
-                <div className="ph" style={{ width: 48, height: 32, borderRadius: 6 }}>
-                  {p.cover ? <img src={p.cover} alt="" style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: 6 }} /> : <div className="ph__in" />}
-                </div>
-              </td>
-              <td className="ti">{p.title}</td>
-              <td style={{ color: "var(--text-muted)", fontSize: "13px" }}>{p.cat}</td>
-              <td><Badge tone={p.status === "Yayında" ? "green" : "muted"}>{p.status}</Badge></td>
-              <td style={{ color: "var(--text-muted)", fontSize: "13px", fontFamily: "var(--font-mono)" }}>{p.date}</td>
-              <td style={{ color: "var(--text-muted)", fontSize: "13px", fontFamily: "var(--font-mono)" }}>{p.views}</td>
-              <td>
-                <div className="adm-row-actions">
-                  <button className="adm-iconbtn" onClick={() => setEditing(p)} aria-label="Düzenle">
-                    <Icon name="edit" size={14} />
-                  </button>
-                  <button className="adm-iconbtn" onClick={() => setPosts(posts.filter(x => x.id !== p.id))} aria-label="Sil">
-                    <Icon name="trash" size={14} />
-                  </button>
-                </div>
-              </td>
-            </tr>
-          ))}
+          {initial.map(p => {
+            const status: string = p.data?.status || (p.publishedAt ? "Yayında" : "Taslak");
+            const cover = p.data?.fields?.cover || p.image;
+            const date = p.publishedAt ? new Date(p.publishedAt).toLocaleDateString("tr-TR") : "—";
+            return (
+              <tr key={p.id}>
+                <td style={{ width: 56 }}>
+                  <div className="ph" style={{ width: 48, height: 32, borderRadius: 6 }}>
+                    {cover ? <img src={cover} alt="" style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: 6 }} /> : <div className="ph__in" />}
+                  </div>
+                </td>
+                <td className="ti">{p.title}</td>
+                <td style={{ color: "var(--text-muted)", fontSize: "13px" }}>{p.category || "—"}</td>
+                <td><Badge tone={status === "Yayında" ? "green" : "muted"}>{status}</Badge></td>
+                <td style={{ color: "var(--text-muted)", fontSize: "13px", fontFamily: "var(--font-mono)" }}>{date}</td>
+                <td>
+                  <div className="adm-row-actions">
+                    <button className="adm-iconbtn" onClick={() => setEditing(p)} aria-label="Düzenle">
+                      <Icon name="edit" size={14} />
+                    </button>
+                    <button className="adm-iconbtn" onClick={() => handleDelete(p.id)} aria-label="Sil">
+                      <Icon name="trash" size={14} />
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            );
+          })}
         </tbody>
       </table>
     </AdmCard>

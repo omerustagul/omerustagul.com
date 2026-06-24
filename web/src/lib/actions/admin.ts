@@ -56,6 +56,70 @@ export async function deleteProject(fd: FormData) {
   refreshSite(["/projects", "/admin/projects"]);
 }
 
+// Rich case-study payload stored in Project.data (JSON). All fields are
+// JSON-compatible so the typed object satisfies Prisma's Json input directly.
+export type ProjectMetric = { id: string; label: string; before: string; after: string };
+export type ProjectGalleryItem = { id: string; src: string; caption?: string };
+export type ProjectData = {
+  status?: string;
+  year?: string;
+  serviceIds?: string[];
+  serviceNames?: string[];
+  duration?: string;
+  role?: string;
+  problem?: string;
+  solution?: string;
+  body?: string;
+  metrics?: ProjectMetric[];
+  quote?: string;
+  quoteAuthor?: string;
+  quoteRole?: string;
+  gallery?: ProjectGalleryItem[];
+  next?: string;
+};
+
+export type ProjectInput = {
+  id?: string;
+  title: string;
+  client?: string | null;
+  category?: string | null;
+  image?: string | null;
+  data?: ProjectData;
+};
+
+/** Object-arg upsert used by the rich case-study editor. Returns the row id.
+    On update the slug is preserved so public /projects/[slug] URLs stay stable. */
+export async function upsertProject(input: ProjectInput): Promise<string> {
+  await requireAdmin();
+  const title = input.title.trim() || "Başlıksız proje";
+  const common = {
+    title,
+    client: input.client?.trim() || null,
+    category: input.category?.trim() || null,
+    image: input.image || null,
+    data: input.data ?? {},
+  };
+  let id = input.id;
+  if (id) {
+    await prisma.project.update({ where: { id }, data: common });
+  } else {
+    const max = await prisma.project.aggregate({ _max: { order: true } });
+    const created = await prisma.project.create({
+      data: { ...common, slug: slugify(title), order: (max._max.order ?? 0) + 1 },
+    });
+    id = created.id;
+  }
+  const row = await prisma.project.findUnique({ where: { id }, select: { slug: true } });
+  refreshSite(["/projects", "/admin/projects", row ? `/projects/${row.slug}` : "/projects"]);
+  return id;
+}
+
+export async function deleteProjectById(id: string): Promise<void> {
+  await requireAdmin();
+  await prisma.project.delete({ where: { id } });
+  refreshSite(["/projects", "/admin/projects"]);
+}
+
 /* ------------------------------------------------------------------- blog */
 export async function saveBlogPost(fd: FormData) {
   await requireAdmin();
@@ -90,6 +154,56 @@ export async function deleteBlogPost(fd: FormData) {
   refreshSite(["/blog", "/admin/blog"]);
 }
 
+// JSON-compatible value (assignable to Prisma's Json input).
+type Jsonish = string | number | boolean | null | Jsonish[] | { [k: string]: Jsonish | undefined };
+export type BlogData = {
+  template?: string | null;
+  status?: string;
+  fields?: { [k: string]: Jsonish };
+};
+export type BlogInput = {
+  id?: string;
+  title: string;
+  excerpt?: string | null;
+  body?: string | null;
+  category?: string | null;
+  image?: string | null;
+  readTime?: string | null;
+  published?: boolean;
+  data?: BlogData;
+};
+export async function upsertBlogPost(input: BlogInput): Promise<string> {
+  await requireAdmin();
+  const title = input.title.trim() || "Başlıksız yazı";
+  const common = {
+    title,
+    excerpt: input.excerpt?.trim() || null,
+    body: input.body ?? null,
+    category: input.category?.trim() || null,
+    image: input.image || null,
+    readTime: input.readTime?.trim() || null,
+    data: input.data ?? {},
+  };
+  let id = input.id;
+  let publishedAt: Date | null = input.published ? new Date() : null;
+  if (id) {
+    const existing = await prisma.blogPost.findUnique({ where: { id } });
+    if (input.published && existing?.publishedAt) publishedAt = existing.publishedAt; // keep original date
+    await prisma.blogPost.update({ where: { id }, data: { ...common, publishedAt } });
+  } else {
+    const created = await prisma.blogPost.create({ data: { ...common, slug: slugify(title), publishedAt } });
+    id = created.id;
+  }
+  const row = await prisma.blogPost.findUnique({ where: { id }, select: { slug: true } });
+  refreshSite(["/blog", "/admin/blog", row ? `/blog/${row.slug}` : "/blog"]);
+  return id;
+}
+export async function deleteBlogPostById(id: string): Promise<void> {
+  await requireAdmin();
+  await prisma.blogPost.delete({ where: { id } });
+  refreshSite(["/blog", "/admin/blog"]);
+}
+
 /* --------------------------------------------------------------- products */
 export async function saveProduct(fd: FormData) {
   await requireAdmin();
@@ -114,6 +228,55 @@ export async function deleteProduct(fd: FormData) {
   refreshSite(["/market", "/admin/products"]);
 }
 
+export type ProductData = {
+  status?: string;
+  tagline?: string;
+  currency?: string;
+  priceLabel?: string;
+  license?: string;
+  desc?: string;
+  includes?: { id: string; text: string }[];
+  specs?: { id: string; k: string; v: string }[];
+  gallery?: { id: string; src: string; caption?: string }[];
+  cover?: string;
+};
+export type ProductInput = {
+  id?: string;
+  title: string;
+  price?: number;
+  type?: string | null;
+  format?: string | null;
+  seller?: string | null;
+  data?: ProductData;
+};
+export async function upsertProduct(input: ProductInput): Promise<string> {
+  await requireAdmin();
+  const title = input.title.trim() || "Başlıksız ürün";
+  const common = {
+    title,
+    price: input.price ?? 0,
+    type: input.type?.trim() || null,
+    format: input.format?.trim() || null,
+    seller: input.seller?.trim() || null,
+    data: input.data ?? {},
+  };
+  let id = input.id;
+  if (id) {
+    await prisma.product.update({ where: { id }, data: common });
+  } else {
+    const created = await prisma.product.create({ data: { ...common, slug: slugify(title) } });
+    id = created.id;
+  }
+  const row = await prisma.product.findUnique({ where: { id }, select: { slug: true } });
+  refreshSite(["/market", "/admin/products", row ? `/market/${row.slug}` : "/market"]);
+  return id;
+}
+export async function deleteProductById(id: string): Promise<void> {
+  await requireAdmin();
+  await prisma.product.delete({ where: { id } });
+  refreshSite(["/market", "/admin/products"]);
+}
+
 /* ---------------------------------------------------------------- courses */
 export async function saveCourse(fd: FormData) {
   await requireAdmin();
@@ -135,6 +298,78 @@ export async function saveCourse(fd: FormData) {
 export async function deleteCourse(fd: FormData) {
   await requireAdmin();
   await prisma.course.delete({ where: { id: str(fd, "id") } });
+  refreshSite(["/academy", "/admin/courses"]);
+}
+
+export type CourseLesson = {
+  id: string; title: string; dur?: string; type?: string; free?: boolean;
+  videoUrl?: string; url?: string; body?: string; img?: string; file?: string;
+  poster?: string; note?: string; vsource?: string; linkLabel?: string; content?: string;
+};
+export type CourseModule = { id: string; title: string; lessons: CourseLesson[] };
+export type CourseData = {
+  status?: string; tagline?: string; lang?: string; currency?: string; priceLabel?: string;
+  salePrice?: string; desc?: string; cover?: string; rating?: number; category?: string;
+  outcomes?: { id: string; text: string }[];
+  requirements?: { id: string; text: string }[];
+  modules?: CourseModule[];
+};
+export type CourseInput = {
+  id?: string;
+  title: string;
+  price?: number;
+  level?: string | null;
+  topic?: string | null;
+  instructor?: string | null;
+  data?: CourseData;
+};
+
+/** Upserts a course (columns + rich `data`) AND mirrors the curriculum into the
+    Module/Lesson tables so the public course player + progress keep working.
+    Note: editing the curriculum replaces modules/lessons (and thus any lesson
+    progress) — acceptable for content management, matching the prototype. */
+export async function upsertCourse2(input: CourseInput): Promise<string> {
+  await requireAdmin();
+  const title = input.title.trim() || "Başlıksız kurs";
+  const common = {
+    title,
+    price: input.price ?? 0,
+    level: input.level?.trim() || null,
+    topic: input.topic?.trim() || null,
+    instructor: input.instructor?.trim() || null,
+    data: input.data ?? {},
+  };
+  let id = input.id;
+  if (id) {
+    await prisma.course.update({ where: { id }, data: common });
+  } else {
+    const created = await prisma.course.create({ data: { ...common, slug: slugify(title) } });
+    id = created.id;
+  }
+  const courseId = id;
+  const mods = input.data?.modules || [];
+  await prisma.$transaction(async (tx) => {
+    await tx.module.deleteMany({ where: { courseId } }); // cascade removes lessons
+    for (let mi = 0; mi < mods.length; mi++) {
+      const m = mods[mi];
+      const cm = await tx.module.create({ data: { courseId, title: m.title || `Modül ${mi + 1}`, order: mi } });
+      const lessons = m.lessons || [];
+      for (let li = 0; li < lessons.length; li++) {
+        const l = lessons[li];
+        const content = l.videoUrl || l.url || l.body || l.img || l.file || l.content || null;
+        await tx.lesson.create({
+          data: { moduleId: cm.id, title: l.title || `Ders ${li + 1}`, kind: l.type || "video", content, order: li },
+        });
+      }
+    }
+  });
+  const row = await prisma.course.findUnique({ where: { id: courseId }, select: { slug: true } });
+  refreshSite(["/academy", "/admin/courses", row ? `/academy/${row.slug}` : "/academy"]);
+  return courseId;
+}
+export async function deleteCourseById(id: string): Promise<void> {
+  await requireAdmin();
+  await prisma.course.delete({ where: { id } });
   refreshSite(["/academy", "/admin/courses"]);
 }
 
@@ -209,21 +444,6 @@ export async function removeLead(id: string) {
   await requireAdmin();
   await prisma.lead.delete({ where: { id } });
   revalidatePath("/admin/leads");
-}
-
-/* --------------------------------------------------------------- bookings */
-export async function setBookingStatus(fd: FormData) {
-  await requireAdmin();
-  await prisma.booking.update({
-    where: { id: str(fd, "id") },
-    data: { status: str(fd, "status") || "pending" },
-  });
-  revalidatePath("/admin/bookings");
-}
-export async function deleteBooking(fd: FormData) {
-  await requireAdmin();
-  await prisma.booking.delete({ where: { id: str(fd, "id") } });
-  revalidatePath("/admin/bookings");
 }
 
 /* --------------------------------------------------------------- settings */

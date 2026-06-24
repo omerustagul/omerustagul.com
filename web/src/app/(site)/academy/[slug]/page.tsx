@@ -33,14 +33,17 @@ export default async function CourseDetail({ params }: { params: Promise<{ slug:
     done = progress.map((p) => p.lessonId);
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const cdata = course.data as any;
+
   return (
     <CoursePage
       courseId={course.id}
       courseSlug={course.slug}
       title={course.title}
-      level="Orta"
-      rating={4.8}
-      price={formatTRY(course.price)}
+      level={course.level || "Orta"}
+      rating={typeof cdata?.rating === "number" && cdata.rating > 0 ? cdata.rating : 4.8}
+      price={cdata?.priceLabel || formatTRY(course.price)}
       modules={course.modules.map((m) => ({
         id: m.id,
         title: m.title,

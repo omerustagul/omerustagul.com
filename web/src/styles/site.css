@@ -368,11 +368,11 @@
 .authm__box {
   position: relative;
   width: 100%;
-  max-width: 400px;
+  max-width: 600px;
   background: var(--bg);
   border: 1px solid var(--border);
-  border-radius: var(--radius-xl);
-  padding: var(--space-7);
+  border-radius: var(--radius-lg);
+  padding: var(--space-6);
   box-shadow: var(--shadow-pop);
   animation: authpop .3s var(--ease-out) forwards;
 }
@@ -504,7 +504,8 @@
 }
 
 .bookm__box {
-  max-width: 440px;
+  width: fit-content;
+  max-width: none;
 }
 
 .bookm__title {
@@ -551,6 +552,337 @@
   opacity: .35;
   cursor: not-allowed;
   text-decoration: line-through;
+}
+
+/* --- Booking wizard: adım göstergesi --- */
+.bookm__steps {
+  display: flex;
+  align-items: center;
+  gap: .4rem;
+  margin: var(--space-4) 0 var(--space-5);
+}
+
+.bookm__step {
+  display: flex;
+  align-items: center;
+  gap: .45rem;
+  color: var(--text-muted);
+}
+
+.bookm__step .n {
+  width: 26px;
+  height: 26px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+}
+
+.bookm__step.on .n {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.bookm__step.done .n {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--on-accent);
+}
+
+.bookm__step .lbl {
+  font-size: var(--fs-xs);
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.bookm__step.on .lbl,
+.bookm__step.done .lbl {
+  color: var(--text);
+}
+
+.bookm__steps .bar {
+  flex: 1;
+  height: 1px;
+  min-width: 6px;
+  background: var(--border);
+}
+
+/* --- segmented (görüşme türü) --- */
+.bookm__seg {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 1fr;
+  gap: 2px;
+  padding: 3px;
+  background: var(--surface-muted);
+  border-radius: var(--radius-pill);
+}
+
+.bookm__seg button {
+  padding: .5rem .4rem;
+  border: 0;
+  background: none;
+  border-radius: var(--radius-pill);
+  font-family: inherit;
+  font-size: var(--fs-sm);
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: background var(--dur-fast), color var(--dur-fast);
+}
+
+.bookm__seg button.on {
+  background: var(--bg);
+  color: var(--text);
+  box-shadow: var(--shadow-1);
+}
+
+/* --- select & textarea (form ile uyumlu) --- */
+.authm__form select,
+.authm__form textarea {
+  font-family: var(--font-sans);
+  font-size: var(--fs-body);
+  color: var(--text);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: .7rem .8rem;
+  transition: border-color var(--dur-fast);
+}
+
+.authm__form select {
+  cursor: pointer;
+}
+
+.authm__form textarea {
+  min-height: 5rem;
+  resize: vertical;
+}
+
+.authm__form select:focus,
+.authm__form textarea:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+/* --- takvim --- */
+.bookm__cal {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: var(--space-3);
+}
+
+.bookm__cal-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-3);
+}
+
+.bookm__cal-head b {
+  font-family: var(--font-mono);
+  font-size: var(--fs-sm);
+}
+
+.bookm__cal-nav {
+  display: flex;
+  gap: .25rem;
+}
+
+.bookm__cal-nav button {
+  width: 30px;
+  height: 30px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  border-radius: var(--radius-sm);
+  color: var(--text);
+  cursor: pointer;
+}
+
+.bookm__cal-nav button:disabled {
+  opacity: .35;
+  cursor: not-allowed;
+}
+
+.bookm__cal-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+}
+
+.bookm__cal-dow {
+  text-align: center;
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  color: var(--text-muted);
+  padding-bottom: 4px;
+}
+
+.bookm__day {
+  aspect-ratio: 1 / 1;
+  display: grid;
+  place-items: center;
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  background: var(--surface-muted);
+  color: var(--text);
+  font-family: var(--font-mono);
+  font-size: var(--fs-sm);
+  cursor: pointer;
+  transition: border-color var(--dur-fast), background var(--dur-fast), color var(--dur-fast);
+}
+
+.bookm__day:hover:not(.is-disabled) {
+  border-color: var(--accent);
+}
+
+.bookm__day.is-disabled {
+  opacity: .3;
+  cursor: not-allowed;
+  background: transparent;
+}
+
+.bookm__day.is-on {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--on-accent);
+}
+
+.bookm__day.is-empty {
+  visibility: hidden;
+}
+
+/* --- adım navigasyonu --- */
+.bookm__nav {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-3);
+  margin-top: var(--space-5);
+}
+
+.bookm__hint {
+  font-size: var(--fs-xs);
+  color: var(--text-muted);
+  margin: 0;
+}
+
+/* --- Booking modal tipografi: mono yerine arayüz fontu (--font-sans), sade etiketler.
+   Yalnızca .bookm kapsamında; auth (giriş/kayıt) modalı mono etiket stilini korur. --- */
+.bookm .authm__form label {
+  font-family: var(--font-sans);
+  font-size: var(--fs-sm);
+  letter-spacing: normal;
+  text-transform: none;
+  font-weight: 500;
+  color: var(--text-muted);
+}
+
+.bookm__slot,
+.bookm__step .n,
+.bookm__cal-head b,
+.bookm__cal-dow,
+.bookm__day {
+  font-family: var(--font-sans);
+}
+
+/* --- Konu: markaya özel açılır seçim (native <select> değil) --- */
+.bookm__field {
+  display: flex;
+  flex-direction: column;
+  gap: .4rem;
+  font-family: var(--font-sans);
+  font-size: var(--fs-sm);
+  font-weight: 500;
+  color: var(--text-muted);
+}
+
+.bookm__sel {
+  position: relative;
+}
+
+.bookm__sel-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: .5rem;
+  font-family: var(--font-sans);
+  font-size: var(--fs-body);
+  font-weight: 400;
+  color: var(--text);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: .7rem .8rem;
+  cursor: pointer;
+  text-align: left;
+  transition: border-color var(--dur-fast);
+}
+
+.bookm__sel-btn:hover,
+.bookm__sel.open .bookm__sel-btn {
+  border-color: var(--accent);
+}
+
+.bookm__sel-chev {
+  color: var(--text-muted);
+  font-size: 1rem;
+  line-height: 1;
+  transition: transform var(--dur-fast);
+}
+
+.bookm__sel.open .bookm__sel-chev {
+  transform: rotate(180deg);
+}
+
+.bookm__sel-pop {
+  position: absolute;
+  z-index: 20;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 4px;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-pop);
+  max-height: 240px;
+  overflow-y: auto;
+  animation: bookmSelPop .14s var(--ease-out);
+}
+
+@keyframes bookmSelPop {
+  from { opacity: 0; transform: translateY(-4px); }
+  to { opacity: 1; transform: none; }
+}
+
+.bookm__sel-opt {
+  width: 100%;
+  text-align: left;
+  font-family: var(--font-sans);
+  font-size: var(--fs-body);
+  font-weight: 400;
+  color: var(--text);
+  background: none;
+  border: 0;
+  border-radius: var(--radius-sm);
+  padding: .55rem .7rem;
+  cursor: pointer;
+  transition: background var(--dur-fast);
+}
+
+.bookm__sel-opt:hover {
+  background: var(--surface-muted);
+}
+
+.bookm__sel-opt.on {
+  background: var(--accent-tint);
+  font-weight: 500;
 }
 
 .overlay__social {
@@ -1651,7 +1983,8 @@
   left: 0;
   right: 0;
   top: 100%;
-  background: var(--bg-elevated);
+  background: color-mix(in srgb, var(--bg) 78%, transparent);
+  -webkit-backdrop-filter: blur(14px);
   border-top: 1px solid var(--border);
   border-bottom: 1px solid var(--border);
   opacity: 0;
