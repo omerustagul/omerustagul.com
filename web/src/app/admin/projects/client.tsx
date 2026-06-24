@@ -116,8 +116,8 @@ function ProjectEditor({ project, onClose, onSave }: any) {
   const nextIsAuto = !f.next;
 
   return (
-    <div style={{ background: "var(--surface)", position: "absolute", inset: 0, zIndex: 100, display: "flex", flexDirection: "column" }}>
-      <div className="ed-toolbar" style={{ flexShrink: 0 }}>
+    <div>
+      <div className="ed-toolbar">
         <button className="ed-back" onClick={onClose}><Icon name="close" size={14} /> Projelere dön</button>
         <span className="adm-badge adm-badge--green">Vaka çalışması düzenleyici</span>
         <span className="sp" style={{ flex: 1 }} />

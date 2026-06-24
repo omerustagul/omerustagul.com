@@ -157,8 +157,8 @@ function BlogWizard({ onClose, onSave }: any) {
   };
 
   return (
-    <div style={{ background: "var(--surface)", position: "absolute", inset: 0, zIndex: 100, display: "flex", flexDirection: "column" }}>
-      <div className="ed-toolbar" style={{ flexShrink: 0 }}>
+    <div>
+      <div className="ed-toolbar">
         <button className="ed-back" onClick={onClose}><Icon name="close" size={14} /> Kapat</button>
         <span className="ai-chip" style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "var(--accent)", color: "#fff", padding: "4px 10px", borderRadius: 16, fontSize: 12, fontWeight: 600 }}>
           <Icon name="ai" size={12} fill /> AI Yazı Sihirbazı
@@ -279,7 +279,7 @@ function BlogEditor({ post, onClose, onSave }: any) {
 
   if (!tpl) {
     return (
-      <div style={{ background: "var(--surface)", position: "absolute", inset: 0, zIndex: 100, display: "flex", flexDirection: "column" }}>
+      <div>
         <div className="ed-toolbar">
           <button className="ed-back" onClick={onClose}><Icon name="close" size={15} /> Kapat</button>
         </div>

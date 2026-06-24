@@ -109,8 +109,8 @@ function ProductEditor({ product, onClose, onSave }: any) {
   const incl = f.includes || [];
 
   return (
-    <div style={{ background: "var(--surface)", position: "absolute", inset: 0, zIndex: 100, display: "flex", flexDirection: "column" }}>
-      <div className="ed-toolbar" style={{ flexShrink: 0 }}>
+    <div>
+      <div className="ed-toolbar">
         <button className="ed-back" onClick={onClose}><Icon name="close" size={14} /> Market'e dön</button>
         <span className="adm-badge adm-badge--green">Ürün düzenleyici</span>
         <span className="sp" style={{ flex: 1 }} />
